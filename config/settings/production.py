@@ -33,6 +33,11 @@ CSRF_TRUSTED_ORIGINS = list(dict.fromkeys(_csrf_origins + ['https://*.vercel.app
 # ─── Vercel Serverless Compatibility ─────────────────────────────────────────
 IS_VERCEL = bool(os.getenv('VERCEL'))
 
+# ─── Demo Admin Auto Provisioning ───────────────────────────────────────────
+AUTO_CREATE_DEMO_ADMIN = config('AUTO_CREATE_DEMO_ADMIN', cast=bool, default=IS_VERCEL)
+DEMO_ADMIN_EMAIL = config('DEMO_ADMIN_EMAIL', default='admin@crm.com')
+DEMO_ADMIN_PASSWORD = config('DEMO_ADMIN_PASSWORD', default='Admin@12345678')
+
 if IS_VERCEL:
 	# Vercel serverless has read-only code filesystem, so file handlers fail.
 	LOGGING['handlers'].pop('file', None)
