@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}مدیریت تیم‌ها — CRM{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="/dashboard/">داشبورد</a></li>
+<li class="breadcrumb-item active">تیم‌ها</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h4 class="mb-0">مدیریت تیم‌ها</h4>
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTeamModal">
+    <i class="bi bi-people-fill me-1"></i> تیم جدید
+  </button>
+</div>
+
+<div class="row g-4" id="teamsGrid">
+  <div class="col-12 text-center py-5 text-muted">در حال بارگذاری…</div>
+</div>
+
+<!-- Modal افزودن تیم -->
+<div class="modal fade" id="addTeamModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">تیم جدید</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="addTeamError" class="alert alert-danger d-none"></div>
+        <div class="mb-3">
+          <label class="form-label">نام تیم <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="addTeamName">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">توضیحات</label>
+          <textarea class="form-control" id="addTeamDesc" rows="2"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">سرپرست</label>
+          <select class="form-select" id="addTeamSupervisor">
+            <option value="">انتخاب سرپرست…</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+        <button class="btn btn-primary" id="btnSaveTeam">ذخیره</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal ویرایش تیم -->
+<div class="modal fade" id="editTeamModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">ویرایش تیم</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="editTeamError" class="alert alert-danger d-none"></div>
+        <input type="hidden" id="editTeamId">
+        <div class="mb-3">
+          <label class="form-label">نام تیم <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="editTeamName">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">توضیحات</label>
+          <textarea class="form-control" id="editTeamDesc" rows="2"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">سرپرست</label>
+          <select class="form-select" id="editTeamSupervisor">
+            <option value="">بدون سرپرست</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">وضعیت</label>
+          <select class="form-select" id="editTeamActive">
+            <option value="true">فعال</option>
+            <option value="false">غیرفعال</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+        <button class="btn btn-primary" id="btnUpdateTeam">بروزرسانی</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function loadTeams() {
+  const res = await CRM.apiFetch('/auth/teams/?page_size=100');
+  if (!res) return;
+  const data = await res.json();
+  const teams = data.results || data;
+  const grid = document.getElementById('teamsGrid');
+
+  if (!teams.length) {
+    grid.innerHTML = '<div class="col-12 text-center py-5 text-muted">هیچ تیمی ثبت نشده است</div>';
+    return;
+  }
+
+  grid.innerHTML = teams.map(t => `
+    <div class="col-md-4 col-lg-3">
+      <div class="card h-100 shadow-sm ${t.is_active ? '' : 'opacity-50'}">
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-3">
+            <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center me-3"
+              style="width:48px;height:48px;font-size:1.4rem">
+              <i class="bi bi-people-fill"></i>
+            </div>
+            <div>
+              <h6 class="mb-0 fw-bold">${t.name}</h6>
+              <small class="text-muted">${t.is_active ? 'فعال' : 'غیرفعال'}</small>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between text-muted small mb-2">
+            <span><i class="bi bi-person me-1"></i>اعضا:</span>
+            <strong class="text-dark">${t.member_count ?? '—'}</strong>
+          </div>
+          <div class="d-flex justify-content-between text-muted small">
+            <span><i class="bi bi-calendar me-1"></i>تاریخ ایجاد:</span>
+            <strong class="text-dark">${CRM.formatDate(t.created_at)}</strong>
+          </div>
+        </div>
+        <div class="card-footer bg-transparent border-0 pt-0 d-flex gap-2">
+          <button class="btn btn-sm btn-outline-primary flex-fill" onclick="openEditTeam(${t.id})">
+            <i class="bi bi-pencil me-1"></i>ویرایش
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadSupervisors() {
+  const res = await CRM.apiFetch('/auth/users/?role=supervisor&page_size=100');
+  if (!res) return;
+  const data = await res.json();
+  const users = data.results || data;
+  const opts = users.map(u => `<option value="${u.id}">${u.first_name} ${u.last_name}</option>`).join('');
+  document.getElementById('addTeamSupervisor').insertAdjacentHTML('beforeend', opts);
+  document.getElementById('editTeamSupervisor').insertAdjacentHTML('beforeend', opts);
+}
+
+async function openEditTeam(id) {
+  const res = await CRM.apiFetch(`/auth/teams/${id}/`);
+  if (!res) return;
+  const t = await res.json();
+  document.getElementById('editTeamId').value = t.id;
+  document.getElementById('editTeamName').value = t.name;
+  document.getElementById('editTeamDesc').value = t.description || '';
+  document.getElementById('editTeamSupervisor').value = t.supervisor || '';
+  document.getElementById('editTeamActive').value = String(t.is_active);
+  document.getElementById('editTeamError').classList.add('d-none');
+  new bootstrap.Modal(document.getElementById('editTeamModal')).show();
+}
+
+document.getElementById('btnSaveTeam').addEventListener('click', async () => {
+  const errEl = document.getElementById('addTeamError');
+  errEl.classList.add('d-none');
+  const name = document.getElementById('addTeamName').value.trim();
+  if (!name) {
+    errEl.textContent = 'نام تیم الزامی است.';
+    errEl.classList.remove('d-none');
+    return;
+  }
+  const payload = {
+    name,
+    description: document.getElementById('addTeamDesc').value.trim() || undefined,
+    supervisor: document.getElementById('addTeamSupervisor').value || null,
+    is_active: true,
+  };
+  const res = await CRM.apiFetch('/auth/teams/', { method: 'POST', body: JSON.stringify(payload) });
+  if (res && res.ok) {
+    bootstrap.Modal.getInstance(document.getElementById('addTeamModal')).hide();
+    CRM.showToast('تیم با موفقیت ایجاد شد');
+    loadTeams();
+  } else {
+    const err = await res.json();
+    errEl.textContent = Object.values(err).flat().join(' | ');
+    errEl.classList.remove('d-none');
+  }
+});
+
+document.getElementById('btnUpdateTeam').addEventListener('click', async () => {
+  const errEl = document.getElementById('editTeamError');
+  errEl.classList.add('d-none');
+  const id = document.getElementById('editTeamId').value;
+  const payload = {
+    name: document.getElementById('editTeamName').value.trim(),
+    description: document.getElementById('editTeamDesc').value.trim() || undefined,
+    supervisor: document.getElementById('editTeamSupervisor').value || null,
+    is_active: document.getElementById('editTeamActive').value === 'true',
+  };
+  const res = await CRM.apiFetch(`/auth/teams/${id}/`, { method: 'PATCH', body: JSON.stringify(payload) });
+  if (res && res.ok) {
+    bootstrap.Modal.getInstance(document.getElementById('editTeamModal')).hide();
+    CRM.showToast('تیم بروز شد');
+    loadTeams();
+  } else {
+    const err = await res.json();
+    errEl.textContent = Object.values(err).flat().join(' | ');
+    errEl.classList.remove('d-none');
+  }
+});
+
+loadTeams();
+loadSupervisors();
+</script>
+{% endblock %}

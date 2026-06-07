@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}مرخصی — CRM{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+<li class="breadcrumb-item active">مرخصی</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h4 class="fw-bold mb-0">مدیریت مرخصی</h4>
+</div>
+
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-header bg-white"><strong>ثبت درخواست مرخصی</strong></div>
+  <div class="card-body">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-3"><select id="leaveType" class="form-select form-select-sm"></select></div>
+      <div class="col-md-2"><input id="leaveStart" type="text" class="form-control form-control-sm" dir="ltr" placeholder="۱۴۰۳/۰۱/۰۱" /></div>
+      <div class="col-md-2"><input id="leaveEnd" type="text" class="form-control form-control-sm" dir="ltr" placeholder="۱۴۰۳/۰۱/۳۰" /></div>
+      <div class="col-md-3"><input id="leaveReason" class="form-control form-control-sm" placeholder="دلیل" /></div>
+      <div class="col-md-2"><button class="btn btn-primary btn-sm w-100" onclick="createLeaveRequest()">ثبت</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>کاربر</th>
+            <th>نوع</th>
+            <th>از</th>
+            <th>تا</th>
+            <th>وضعیت</th>
+            <th>اقدام</th>
+          </tr>
+        </thead>
+        <tbody id="leaveTbody"><tr><td colspan="6" class="text-center py-3">در حال بارگذاری…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function loadLeaveTypes() {
+  const sel = document.getElementById('leaveType');
+  const res = await CRM.apiFetch('/leave/types/?page_size=100');
+  if (!res || !res.ok) return sel.innerHTML = '<option>خطا</option>';
+  const data = await res.json();
+  const items = data.results || data;
+  sel.innerHTML = items.map(i => `<option value="${i.id}">${i.name}</option>`).join('');
+}
+
+async function createLeaveRequest() {
+  const payload = {
+    leave_type: Number(document.getElementById('leaveType').value),
+    start_date: CRM.toISO(document.getElementById('leaveStart').value) || document.getElementById('leaveStart').value,
+    end_date: CRM.toISO(document.getElementById('leaveEnd').value) || document.getElementById('leaveEnd').value,
+    reason: document.getElementById('leaveReason').value,
+  };
+  const res = await CRM.apiFetch('/leave/requests/', { method: 'POST', body: JSON.stringify(payload) });
+  if (!res || !res.ok) return CRM.showToast('ثبت درخواست ناموفق بود.', 'danger');
+  CRM.showToast('درخواست مرخصی ثبت شد.', 'success');
+  loadLeaveRequests();
+}
+
+async function leaveAction(id, actionType) {
+  const payload = actionType === 'reject'
+    ? { action: 'reject', rejection_reason: 'رد توسط مدیر' }
+    : { action: 'approve' };
+  const res = await CRM.apiFetch(`/leave/requests/${id}/action/`, { method: 'POST', body: JSON.stringify(payload) });
+  if (!res || !res.ok) return CRM.showToast('اقدام ناموفق بود.', 'danger');
+  CRM.showToast('اقدام ثبت شد.', 'success');
+  loadLeaveRequests();
+}
+
+async function cancelLeave(id) {
+  const res = await CRM.apiFetch(`/leave/requests/${id}/cancel/`, { method: 'POST' });
+  if (!res || !res.ok) return CRM.showToast('لغو ناموفق بود.', 'danger');
+  CRM.showToast('درخواست لغو شد.', 'success');
+  loadLeaveRequests();
+}
+
+async function loadLeaveRequests() {
+  const tbody = document.getElementById('leaveTbody');
+  const res = await CRM.apiFetch('/leave/requests/?page_size=100');
+  if (!res || !res.ok) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-3">خطا</td></tr>';
+    return;
+  }
+  const data = await res.json();
+  const items = data.results || data;
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">بدون داده</td></tr>';
+    return;
+  }
+  tbody.innerHTML = items.map(r => `
+    <tr>
+      <td>${r.user_name || '—'}</td>
+      <td>${r.leave_type_name || '—'}</td>
+      <td>${CRM.formatDate(r.start_date)}</td>
+      <td>${CRM.formatDate(r.end_date)}</td>
+      <td>${CRM.statusBadge(r.status)}</td>
+      <td>
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-outline-success" onclick="leaveAction(${r.id}, 'approve')">تایید</button>
+          <button class="btn btn-outline-danger" onclick="leaveAction(${r.id}, 'reject')">رد</button>
+          <button class="btn btn-outline-secondary" onclick="cancelLeave(${r.id})">لغو</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadLeaveTypes();
+  loadLeaveRequests();
+});
+</script>
+{% endblock %}

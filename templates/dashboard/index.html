@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}داشبورد — CRM{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">داشبورد</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h4 class="fw-bold mb-0">خوش آمدید، {{ user.first_name }} 👋</h4>
+    <small class="text-muted">{{ user.get_role_display }} &nbsp;|&nbsp; امروز: <span id="today-date"></span></small>
+  </div>
+  <div>
+    <button class="btn btn-primary btn-sm" onclick="loadDashboard();loadCharts();loadLeadStatusChart()">
+      <i class="bi bi-arrow-clockwise me-1"></i> بروزرسانی
+    </button>
+  </div>
+</div>
+
+<!-- ─── کارت‌های آماری ─── -->
+<div class="row g-3 mb-4" id="kpi-cards">
+
+  <div class="col-xl-3 col-md-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 bg-primary bg-opacity-10 p-3">
+          <i class="bi bi-people fs-3 text-primary"></i>
+        </div>
+        <div>
+          <div class="text-muted small">کل سرنخ‌ها</div>
+          <div class="fw-bold fs-4" id="stat-leads-total">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 bg-success bg-opacity-10 p-3">
+          <i class="bi bi-check2-circle fs-3 text-success"></i>
+        </div>
+        <div>
+          <div class="text-muted small">سرنخ‌های برنده</div>
+          <div class="fw-bold fs-4" id="stat-leads-won">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 bg-warning bg-opacity-10 p-3">
+          <i class="bi bi-receipt fs-3 text-warning"></i>
+        </div>
+        <div>
+          <div class="text-muted small">در انتظار تایید</div>
+          <div class="fw-bold fs-4" id="stat-invoices-pending">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 bg-info bg-opacity-10 p-3">
+          <i class="bi bi-graph-up-arrow fs-3 text-info"></i>
+        </div>
+        <div>
+          <div class="text-muted small">پرداخت‌شده این ماه</div>
+          <div class="fw-bold fs-4" id="stat-invoices-paid">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── نمودارها ─── -->
+<div class="row g-3 mb-4">
+
+  <div class="col-xl-8">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between pt-3 px-4">
+        <h6 class="fw-bold mb-0">روند فاکتورها</h6>
+        <select class="form-select form-select-sm w-auto" id="chartMonths" onchange="loadCharts()">
+          <option value="3">۳ ماه اخیر</option>
+          <option value="6" selected>۶ ماه اخیر</option>
+          <option value="12">۱۲ ماه اخیر</option>
+        </select>
+      </div>
+      <div class="card-body">
+        <canvas id="invoiceChart" height="90"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white border-0 pt-3 px-4">
+        <h6 class="fw-bold mb-0">توزیع وضعیت سرنخ‌ها</h6>
+      </div>
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <canvas id="leadStatusChart" style="max-height:240px;"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── روند جذب سرنخ ─── -->
+<div class="row g-3">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-0 pt-3 px-4">
+        <h6 class="fw-bold mb-0">جذب سرنخ — ماهانه</h6>
+      </div>
+      <div class="card-body">
+        <canvas id="leadChart" height="60"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('today-date').textContent = new Date().toLocaleDateString('fa-IR-u-ca-persian', {
+  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+});
+
+async function loadDashboard() {
+  const res = await CRM.apiFetch('/reports/dashboard/');
+  if (!res || !res.ok) return;
+  const data = await res.json();
+  document.getElementById('stat-leads-total').textContent      = data.leads?.total ?? '—';
+  document.getElementById('stat-leads-won').textContent        = data.leads?.won ?? '—';
+  document.getElementById('stat-invoices-pending').textContent = data.invoices?.pending_approval ?? '—';
+  document.getElementById('stat-invoices-paid').textContent    = data.invoices?.paid_this_month ?? '—';
+}
+
+let invoiceChartInstance = null;
+let leadChartInstance = null;
+let leadStatusChartInstance = null;
+
+async function loadCharts() {
+  const months = document.getElementById('chartMonths').value;
+  const res = await CRM.apiFetch(`/reports/charts/?months=${months}`);
+  if (!res || !res.ok) return;
+  const data = await res.json();
+
+  const invoiceCtx = document.getElementById('invoiceChart').getContext('2d');
+  if (invoiceChartInstance) invoiceChartInstance.destroy();
+  invoiceChartInstance = new Chart(invoiceCtx, {
+    type: 'line',
+    data: {
+      labels: data.labels,
+      datasets: [
+        { label: 'کل فاکتورها', data: data.invoices?.total, borderColor: '#0d6efd', backgroundColor: 'rgba(13,110,253,.08)', tension: 0.4, fill: true },
+        { label: 'پرداخت‌شده',  data: data.invoices?.paid,  borderColor: '#198754', backgroundColor: 'rgba(25,135,84,.08)',  tension: 0.4, fill: true }
+      ]
+    },
+    options: { plugins: { legend: { position: 'top' } }, responsive: true }
+  });
+
+  const leadCtx = document.getElementById('leadChart').getContext('2d');
+  if (leadChartInstance) leadChartInstance.destroy();
+  leadChartInstance = new Chart(leadCtx, {
+    type: 'bar',
+    data: {
+      labels: data.labels,
+      datasets: [{ label: 'سرنخ‌های جدید', data: data.leads?.total, backgroundColor: 'rgba(13,202,240,.7)', borderRadius: 4 }]
+    },
+    options: { plugins: { legend: { display: false } }, responsive: true }
+  });
+}
+
+async function loadLeadStatusChart() {
+  const res = await CRM.apiFetch('/reports/dashboard/');
+  if (!res || !res.ok) return;
+  const data = await res.json();
+  const leads = data.leads || {};
+  const ctx = document.getElementById('leadStatusChart').getContext('2d');
+  if (leadStatusChartInstance) leadStatusChartInstance.destroy();
+  leadStatusChartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['جدید', 'برنده', 'از دست‌رفته', 'سایر'],
+      datasets: [{
+        data: [leads.new||0, leads.won||0, leads.lost||0,
+          Math.max(0,(leads.total||0)-(leads.new||0)-(leads.won||0)-(leads.lost||0))],
+        backgroundColor: ['#0dcaf0', '#198754', '#dc3545', '#adb5bd'],
+        borderWidth: 0,
+      }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } }, cutout: '65%' }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadDashboard();
+  loadCharts();
+  loadLeadStatusChart();
+});
+</script>
+{% endblock %}

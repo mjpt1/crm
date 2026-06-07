@@ -1,0 +1,197 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}فاکتورها — CRM{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+<li class="breadcrumb-item active">فاکتورها</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h4 class="fw-bold mb-0">فاکتورها</h4>
+  <button class="btn btn-primary btn-sm" onclick="openNewInvoiceModal()">
+    <i class="bi bi-plus-circle me-1"></i> فاکتور جدید
+  </button>
+</div>
+
+<!-- فیلترها -->
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-body py-2 px-4">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-3">
+        <input type="search" class="form-control form-control-sm" id="searchInput"
+               placeholder="جستجو بر اساس شماره فاکتور یا نام مشتری…" />
+      </div>
+      <div class="col-md-2">
+        <select class="form-select form-select-sm" id="statusFilter">
+          <option value="">همه وضعیت‌ها</option>
+          <option value="draft">پیش‌نویس</option>
+          <option value="pending_approval">در انتظار تایید</option>
+          <option value="approved">تایید شده</option>
+          <option value="partially_paid">پرداخت جزئی</option>
+          <option value="paid">پرداخت‌شده</option>
+          <option value="overdue">معوق</option>
+          <option value="cancelled">لغو شده</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <input type="text" class="form-control form-control-sm" id="dateFrom" dir="ltr" placeholder="از: ۱۴۰۳/۰۱/۰۱" />
+      </div>
+      <div class="col-md-2">
+        <input type="text" class="form-control form-control-sm" id="dateTo" dir="ltr" placeholder="تا: ۱۴۰۳/۱۲/۲۹" />
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-primary btn-sm w-100" onclick="loadInvoices()">
+          <i class="bi bi-search me-1"></i> فیلتر
+        </button>
+      </div>
+      <div class="col-md-1 text-end">
+        <button class="btn btn-outline-secondary btn-sm" onclick="clearFilters()">پاک</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- جدول -->
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>شماره فاکتور</th>
+            <th>مشتری</th>
+            <th>تاریخ صدور</th>
+            <th>سررسید</th>
+            <th class="text-end">مبلغ کل</th>
+            <th class="text-end">پرداخت‌شده</th>
+            <th class="text-end">مانده</th>
+            <th>وضعیت</th>
+            <th>ایجاد توسط</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="invoices-tbody">
+          <tr><td colspan="10" class="text-center py-4 text-muted">در حال بارگذاری…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- صفحه‌بندی -->
+<div class="d-flex justify-content-between align-items-center mt-3">
+  <small class="text-muted" id="pagination-info"></small>
+  <nav>
+    <ul class="pagination pagination-sm mb-0" id="pagination-nav"></ul>
+  </nav>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPage = 1;
+const PAGE_SIZE = 20;
+
+const STATUS_LABELS = {
+  draft: 'پیش‌نویس',
+  pending_approval: 'در انتظار تایید',
+  approved: 'تایید شده',
+  partially_paid: 'پرداخت جزئی',
+  paid: 'پرداخت‌شده',
+  overdue: 'معوق',
+  cancelled: 'لغو شده',
+};
+const STATUS_BADGE = {
+  draft: 'secondary', pending_approval: 'warning', approved: 'info',
+  partially_paid: 'primary', paid: 'success', overdue: 'danger', cancelled: 'dark'
+};
+
+function buildQueryString() {
+  const params = new URLSearchParams();
+  const search = document.getElementById('searchInput').value.trim();
+  const status = document.getElementById('statusFilter').value;
+  const from   = document.getElementById('dateFrom').value;
+  const to     = document.getElementById('dateTo').value;
+  if (search) params.append('search', search);
+  if (status) params.append('status', status);
+  if (from)   params.append('issue_date_after',  CRM.toISO(from) || from);
+  if (to)     params.append('issue_date_before', CRM.toISO(to) || to);
+  params.append('page', currentPage);
+  params.append('page_size', PAGE_SIZE);
+  return params.toString();
+}
+
+async function loadInvoices() {
+  const tbody = document.getElementById('invoices-tbody');
+  tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4"><span class="spinner-border spinner-border-sm"></span></td></tr>';
+  const res = await CRM.apiFetch(`/sales/invoices/?${buildQueryString()}`);
+  if (!res || !res.ok) {
+    tbody.innerHTML = '<tr><td colspan="10" class="text-center text-danger py-4">خطا در بارگذاری فاکتورها</td></tr>';
+    return;
+  }
+  const data = await res.json();
+  renderInvoices(data);
+}
+
+function renderInvoices(data) {
+  const tbody = document.getElementById('invoices-tbody');
+  const items = data.results || data;
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4">فاکتوری یافت نشد.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = items.map(inv => `
+    <tr>
+      <td><a href="/invoices/${inv.id}/" class="fw-semibold text-decoration-none">${inv.invoice_number}</a></td>
+      <td>${inv.customer_name || '—'}</td>
+      <td>${CRM.formatDate(inv.issue_date)}</td>
+      <td>${CRM.formatDate(inv.due_date)}</td>
+      <td class="text-end">${CRM.formatCurrency(inv.total_amount)}</td>
+      <td class="text-end text-success">${CRM.formatCurrency(inv.paid_amount)}</td>
+      <td class="text-end text-danger">${CRM.formatCurrency(inv.remaining_amount)}</td>
+      <td><span class="badge bg-${STATUS_BADGE[inv.status] || 'secondary'}">${STATUS_LABELS[inv.status] || inv.status}</span></td>
+      <td>${inv.created_by_name || '—'}</td>
+      <td>
+        <a href="/invoices/${inv.id}/" class="btn btn-sm btn-outline-primary py-0 px-2">
+          <i class="bi bi-eye"></i>
+        </a>
+      </td>
+    </tr>
+  `).join('');
+  document.getElementById('pagination-info').textContent = `${data.count || items.length} فاکتور`;
+  renderPagination(data.count, data.next, data.previous);
+}
+
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('statusFilter').value = '';
+  document.getElementById('dateFrom').value = '';
+  document.getElementById('dateTo').value = '';
+  currentPage = 1;
+  loadInvoices();
+}
+
+function renderPagination(total, next, previous) {
+  document.getElementById('pagination-nav').innerHTML = `
+    <li class="page-item ${!previous ? 'disabled' : ''}">
+      <a class="page-link" href="#" onclick="event.preventDefault();goToPage(${currentPage - 1})">«</a>
+    </li>
+    <li class="page-item disabled"><a class="page-link">صفحه ${currentPage}</a></li>
+    <li class="page-item ${!next ? 'disabled' : ''}">
+      <a class="page-link" href="#" onclick="event.preventDefault();goToPage(${currentPage + 1})">»</a>
+    </li>`;
+}
+
+function goToPage(page) { currentPage = page; loadInvoices(); }
+
+function openNewInvoiceModal() { CRM.showToast('ایجاد فاکتور جدید به زودی اضافه می‌شود.', 'info'); }
+
+document.addEventListener('DOMContentLoaded', loadInvoices);
+document.getElementById('searchInput').addEventListener('keyup', (e) => {
+  if (e.key === 'Enter') loadInvoices();
+});
+</script>
+{% endblock %}

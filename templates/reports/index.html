@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}گزارش‌ها — CRM{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+<li class="breadcrumb-item active">گزارش‌ها</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h4 class="fw-bold mb-0">گزارش‌ها</h4>
+  <small class="text-muted" id="reportTime"></small>
+</div>
+
+<!-- ─── کارت‌های آماری ─── -->
+<div class="row g-3 mb-4">
+  <div class="col-xl-3 col-md-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 bg-primary bg-opacity-10 p-3">
+          <i class="bi bi-people fs-3 text-primary"></i>
+        </div>
+        <div>
+          <div class="text-muted small">کل سرنخ‌ها</div>
+          <div class="fw-bold fs-4" id="r-leads-total">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 bg-success bg-opacity-10 p-3">
+          <i class="bi bi-trophy fs-3 text-success"></i>
+        </div>
+        <div>
+          <div class="text-muted small">برنده / از دست‌رفته</div>
+          <div class="fw-bold fs-4">
+            <span id="r-leads-won" class="text-success">—</span>
+            <span class="text-muted fs-6">/</span>
+            <span id="r-leads-lost" class="text-danger">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 bg-warning bg-opacity-10 p-3">
+          <i class="bi bi-receipt fs-3 text-warning"></i>
+        </div>
+        <div>
+          <div class="text-muted small">فاکتور در انتظار</div>
+          <div class="fw-bold fs-4" id="r-inv-pending">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-3 col-md-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 bg-info bg-opacity-10 p-3">
+          <i class="bi bi-cash-stack fs-3 text-info"></i>
+        </div>
+        <div>
+          <div class="text-muted small">پرداختی این ماه</div>
+          <div class="fw-bold fs-4" id="r-inv-paid">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── نمودارها ─── -->
+<div class="row g-3 mb-4">
+  <div class="col-xl-8">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between pt-3 px-4">
+        <h6 class="fw-bold mb-0">روند فاکتورها</h6>
+        <select class="form-select form-select-sm w-auto" id="monthsSel" onchange="loadChartsReport()">
+          <option value="3">۳ ماه اخیر</option>
+          <option value="6" selected>۶ ماه اخیر</option>
+          <option value="12">۱۲ ماه اخیر</option>
+        </select>
+      </div>
+      <div class="card-body">
+        <canvas id="invoiceChart" height="90"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white border-0 pt-3 px-4">
+        <h6 class="fw-bold mb-0">توزیع وضعیت سرنخ‌ها</h6>
+      </div>
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <canvas id="leadStatusChart" style="max-height:240px;"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-0 pt-3 px-4">
+        <h6 class="fw-bold mb-0">جذب سرنخ — ماهانه</h6>
+      </div>
+      <div class="card-body">
+        <canvas id="leadChart" height="60"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── عملکرد کارشناس و تیم ─── -->
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-0 pt-3 px-4 d-flex align-items-center justify-content-between">
+        <h6 class="fw-bold mb-0">عملکرد کارشناس</h6>
+      </div>
+      <div class="card-body">
+        <div class="input-group input-group-sm mb-3">
+          <select class="form-select" id="expertSel">
+            <option value="">انتخاب کارشناس…</option>
+          </select>
+          <button class="btn btn-primary" onclick="loadExpertReport()">نمایش</button>
+        </div>
+        <div id="expertPanel" class="d-none">
+          <div class="row g-2">
+            <div class="col-6">
+              <div class="bg-light rounded p-2 text-center">
+                <div class="text-muted small">کل سرنخ‌ها</div>
+                <div class="fw-bold fs-5" id="ep-leads">—</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="bg-light rounded p-2 text-center">
+                <div class="text-muted small">برنده‌ها</div>
+                <div class="fw-bold fs-5 text-success" id="ep-won">—</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="bg-light rounded p-2 text-center">
+                <div class="text-muted small">کل فاکتورها</div>
+                <div class="fw-bold fs-5" id="ep-invoices">—</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="bg-light rounded p-2 text-center">
+                <div class="text-muted small">درآمد کل</div>
+                <div class="fw-bold fs-5 text-primary" id="ep-revenue">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="expertEmpty" class="text-center text-muted py-3">
+          <i class="bi bi-person-lines-fill fs-2 opacity-25"></i>
+          <div class="small mt-1">یک کارشناس انتخاب کنید</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-0 pt-3 px-4">
+        <h6 class="fw-bold mb-0">عملکرد تیم</h6>
+      </div>
+      <div class="card-body">
+        <div class="input-group input-group-sm mb-3">
+          <select class="form-select" id="teamSel">
+            <option value="">انتخاب تیم…</option>
+          </select>
+          <button class="btn btn-primary" onclick="loadTeamReport()">نمایش</button>
+        </div>
+        <div id="teamPanel" class="d-none">
+          <div class="row g-2">
+            <div class="col-6">
+              <div class="bg-light rounded p-2 text-center">
+                <div class="text-muted small">کل سرنخ‌ها</div>
+                <div class="fw-bold fs-5" id="tp-leads">—</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="bg-light rounded p-2 text-center">
+                <div class="text-muted small">برنده‌ها</div>
+                <div class="fw-bold fs-5 text-success" id="tp-won">—</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="bg-light rounded p-2 text-center">
+                <div class="text-muted small">کل فاکتورها</div>
+                <div class="fw-bold fs-5" id="tp-invoices">—</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="bg-light rounded p-2 text-center">
+                <div class="text-muted small">درآمد کل</div>
+                <div class="fw-bold fs-5 text-primary" id="tp-revenue">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="teamEmpty" class="text-center text-muted py-3">
+          <i class="bi bi-people-fill fs-2 opacity-25"></i>
+          <div class="small mt-1">یک تیم انتخاب کنید</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+let invoiceChart, leadChart, leadStatusChart;
+
+async function loadSummary() {
+  const res = await CRM.apiFetch('/reports/dashboard/');
+  if (!res || !res.ok) return;
+  const d = await res.json();
+  document.getElementById('r-leads-total').textContent  = d.leads?.total ?? '—';
+  document.getElementById('r-leads-won').textContent    = d.leads?.won ?? '—';
+  document.getElementById('r-leads-lost').textContent   = d.leads?.lost ?? '—';
+  document.getElementById('r-inv-pending').textContent  = d.invoices?.pending_approval ?? '—';
+  document.getElementById('r-inv-paid').textContent     = d.invoices?.paid_this_month ?? '—';
+  if (d.generated_at) {
+    document.getElementById('reportTime').textContent = 'آخرین بروزرسانی: ' + CRM.formatDate(d.generated_at);
+  }
+  // Doughnut chart
+  const leads = d.leads || {};
+  const ctx = document.getElementById('leadStatusChart').getContext('2d');
+  if (leadStatusChart) leadStatusChart.destroy();
+  leadStatusChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['جدید', 'برنده', 'از دست‌رفته', 'سایر'],
+      datasets: [{
+        data: [leads.new||0, leads.won||0, leads.lost||0,
+          Math.max(0, (leads.total||0) - (leads.new||0) - (leads.won||0) - (leads.lost||0))],
+        backgroundColor: ['#0dcaf0','#198754','#dc3545','#adb5bd'],
+        borderWidth: 0,
+      }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } }, cutout: '65%' }
+  });
+}
+
+async function loadChartsReport() {
+  const months = document.getElementById('monthsSel').value;
+  const res = await CRM.apiFetch(`/reports/charts/?months=${months}`);
+  if (!res || !res.ok) return;
+  const data = await res.json();
+
+  const iCtx = document.getElementById('invoiceChart').getContext('2d');
+  if (invoiceChart) invoiceChart.destroy();
+  invoiceChart = new Chart(iCtx, {
+    type: 'line',
+    data: {
+      labels: data.labels || [],
+      datasets: [
+        { label: 'کل فاکتورها', data: data.invoices?.total||[], borderColor:'#0d6efd', backgroundColor:'rgba(13,110,253,.08)', tension:0.4, fill:true },
+        { label: 'پرداخت‌شده',  data: data.invoices?.paid||[],  borderColor:'#198754', backgroundColor:'rgba(25,135,84,.08)',  tension:0.4, fill:true },
+      ]
+    },
+    options: { plugins:{ legend:{position:'top'} }, responsive:true }
+  });
+
+  const lCtx = document.getElementById('leadChart').getContext('2d');
+  if (leadChart) leadChart.destroy();
+  leadChart = new Chart(lCtx, {
+    type: 'bar',
+    data: {
+      labels: data.labels || [],
+      datasets: [{ label: 'سرنخ‌های جدید', data: data.leads?.total||[], backgroundColor:'rgba(13,202,240,.7)', borderRadius:4 }]
+    },
+    options: { plugins:{ legend:{display:false} }, responsive:true }
+  });
+}
+
+async function loadSelects() {
+  const [uRes, tRes] = await Promise.all([
+    CRM.apiFetch('/auth/users/?page_size=200'),
+    CRM.apiFetch('/auth/teams/?page_size=100'),
+  ]);
+  if (uRes && uRes.ok) {
+    const d = await uRes.json();
+    const users = d.results || d;
+    document.getElementById('expertSel').insertAdjacentHTML('beforeend',
+      users.map(u => `<option value="${u.id}">${u.first_name} ${u.last_name}</option>`).join(''));
+  }
+  if (tRes && tRes.ok) {
+    const d = await tRes.json();
+    const teams = d.results || d;
+    document.getElementById('teamSel').insertAdjacentHTML('beforeend',
+      teams.map(t => `<option value="${t.id}">${t.name}</option>`).join(''));
+  }
+}
+
+async function loadExpertReport() {
+  const id = document.getElementById('expertSel').value;
+  if (!id) return;
+  const res = await CRM.apiFetch(`/reports/expert/${id}/`);
+  if (!res || !res.ok) { CRM.showToast('داده‌ای یافت نشد', 'warning'); return; }
+  const d = await res.json();
+  document.getElementById('ep-leads').textContent    = d.leads?.total ?? '—';
+  document.getElementById('ep-won').textContent      = d.leads?.won ?? '—';
+  document.getElementById('ep-invoices').textContent = d.invoices?.total ?? '—';
+  document.getElementById('ep-revenue').textContent  = d.invoices?.total_revenue != null
+    ? CRM.formatCurrency(d.invoices.total_revenue) : '—';
+  document.getElementById('expertPanel').classList.remove('d-none');
+  document.getElementById('expertEmpty').classList.add('d-none');
+}
+
+async function loadTeamReport() {
+  const id = document.getElementById('teamSel').value;
+  if (!id) return;
+  const res = await CRM.apiFetch(`/reports/team/${id}/`);
+  if (!res || !res.ok) { CRM.showToast('داده‌ای یافت نشد', 'warning'); return; }
+  const d = await res.json();
+  document.getElementById('tp-leads').textContent    = d.leads?.total ?? '—';
+  document.getElementById('tp-won').textContent      = d.leads?.won ?? '—';
+  document.getElementById('tp-invoices').textContent = d.invoices?.total ?? '—';
+  document.getElementById('tp-revenue').textContent  = d.invoices?.total_revenue != null
+    ? CRM.formatCurrency(d.invoices.total_revenue) : '—';
+  document.getElementById('teamPanel').classList.remove('d-none');
+  document.getElementById('teamEmpty').classList.add('d-none');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadSummary();
+  loadChartsReport();
+  loadSelects();
+});
+</script>
+{% endblock %}

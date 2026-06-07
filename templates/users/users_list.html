@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+
+{% block title %}مدیریت کاربران — CRM{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="/dashboard/">داشبورد</a></li>
+<li class="breadcrumb-item active">کاربران</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h4 class="mb-0">مدیریت کاربران</h4>
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+    <i class="bi bi-person-plus me-1"></i> کاربر جدید
+  </button>
+</div>
+
+<!-- فیلتر -->
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-4">
+        <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="جستجو (نام، ایمیل)…">
+      </div>
+      <div class="col-md-3">
+        <select class="form-select form-select-sm" id="roleFilter">
+          <option value="">همه نقش‌ها</option>
+          <option value="super_admin">سوپر ادمین</option>
+          <option value="sales_manager">مدیر فروش</option>
+          <option value="supervisor">سرپرست</option>
+          <option value="sales_expert">کارشناس فروش</option>
+          <option value="finance">مالی</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select form-select-sm" id="activeFilter">
+          <option value="">همه وضعیت‌ها</option>
+          <option value="true">فعال</option>
+          <option value="false">غیرفعال</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-sm btn-outline-secondary w-100" id="btnSearch">
+          <i class="bi bi-search me-1"></i> جستجو
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- جدول -->
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>نام</th>
+            <th>ایمیل</th>
+            <th>موبایل</th>
+            <th>نقش</th>
+            <th>تیم</th>
+            <th>وضعیت</th>
+            <th>تاریخ عضویت</th>
+            <th>عملیات</th>
+          </tr>
+        </thead>
+        <tbody id="usersTbody">
+          <tr><td colspan="9" class="text-center py-4 text-muted">در حال بارگذاری…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- صفحه‌بندی -->
+<nav class="mt-3 d-flex justify-content-between align-items-center" id="paginationArea">
+  <small id="pageInfo" class="text-muted"></small>
+  <ul class="pagination pagination-sm mb-0" id="paginationNav"></ul>
+</nav>
+
+<!-- Modal افزودن کاربر -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">کاربر جدید</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="addUserError" class="alert alert-danger d-none"></div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">نام <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="addFirstName">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">نام خانوادگی <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="addLastName">
+          </div>
+          <div class="col-12">
+            <label class="form-label">ایمیل <span class="text-danger">*</span></label>
+            <input type="email" class="form-control" id="addEmail">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">موبایل</label>
+            <input type="text" class="form-control" id="addPhone" placeholder="09…">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">نقش <span class="text-danger">*</span></label>
+            <select class="form-select" id="addRole">
+              <option value="sales_expert">کارشناس فروش</option>
+              <option value="supervisor">سرپرست</option>
+              <option value="finance">مالی</option>
+              <option value="sales_manager">مدیر فروش</option>
+              <option value="super_admin">سوپر ادمین</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">تیم</label>
+            <select class="form-select" id="addTeam"><option value="">بدون تیم</option></select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">رمز عبور <span class="text-danger">*</span></label>
+            <input type="password" class="form-control" id="addPassword">
+            <div class="form-text">حداقل ۱۰ کاراکتر</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">تکرار رمز <span class="text-danger">*</span></label>
+            <input type="password" class="form-control" id="addPasswordConfirm">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+        <button class="btn btn-primary" id="btnSaveUser">ذخیره</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal ویرایش کاربر -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">ویرایش کاربر</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="editUserError" class="alert alert-danger d-none"></div>
+        <input type="hidden" id="editUserId">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">نام</label>
+            <input type="text" class="form-control" id="editFirstName">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">نام خانوادگی</label>
+            <input type="text" class="form-control" id="editLastName">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">موبایل</label>
+            <input type="text" class="form-control" id="editPhone">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">نقش</label>
+            <select class="form-select" id="editRole">
+              <option value="sales_expert">کارشناس فروش</option>
+              <option value="supervisor">سرپرست</option>
+              <option value="finance">مالی</option>
+              <option value="sales_manager">مدیر فروش</option>
+              <option value="super_admin">سوپر ادمین</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">تیم</label>
+            <select class="form-select" id="editTeam"><option value="">بدون تیم</option></select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">وضعیت</label>
+            <select class="form-select" id="editIsActive">
+              <option value="true">فعال</option>
+              <option value="false">غیرفعال</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+        <button class="btn btn-primary" id="btnUpdateUser">بروزرسانی</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const ROLE_LABELS = {
+  super_admin: 'سوپر ادمین',
+  sales_manager: 'مدیر فروش',
+  supervisor: 'سرپرست',
+  sales_expert: 'کارشناس فروش',
+  finance: 'مالی',
+};
+let currentPage = 1;
+let currentSearch = '', currentRole = '', currentActive = '';
+
+async function loadUsers(page = 1) {
+  currentPage = page;
+  let qs = `page=${page}&page_size=20`;
+  if (currentSearch) qs += `&search=${encodeURIComponent(currentSearch)}`;
+  if (currentRole) qs += `&role=${currentRole}`;
+  if (currentActive !== '') qs += `&is_active=${currentActive}`;
+
+  const res = await CRM.apiFetch(`/auth/users/?${qs}`);
+  if (!res) return;
+  const data = await res.json();
+  const rows = (data.results || data);
+  const total = data.count || rows.length;
+  const tbody = document.getElementById('usersTbody');
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">کاربری یافت نشد</td></tr>';
+    document.getElementById('pageInfo').textContent = '';
+    document.getElementById('paginationNav').innerHTML = '';
+    return;
+  }
+
+  tbody.innerHTML = rows.map((u, i) => `
+    <tr>
+      <td>${(page - 1) * 20 + i + 1}</td>
+      <td>
+        <div class="fw-semibold">${u.first_name} ${u.last_name}</div>
+      </td>
+      <td>${u.email}</td>
+      <td dir="ltr">${u.phone || '—'}</td>
+      <td>${ROLE_LABELS[u.role] || u.role}</td>
+      <td>${u.team_name || '—'}</td>
+      <td>${u.is_active
+        ? '<span class="badge bg-success">فعال</span>'
+        : '<span class="badge bg-secondary">غیرفعال</span>'}</td>
+      <td>${CRM.formatDate(u.created_at)}</td>
+      <td>
+        <button class="btn btn-sm btn-outline-primary py-0" onclick="openEditUser(${u.id})">
+          <i class="bi bi-pencil"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-${u.is_active ? 'danger' : 'success'} py-0 ms-1"
+          onclick="toggleActive(${u.id}, ${u.is_active})">
+          <i class="bi bi-${u.is_active ? 'person-slash' : 'person-check'}"></i>
+        </button>
+      </td>
+    </tr>
+  `).join('');
+
+  document.getElementById('pageInfo').textContent = `نمایش ${rows.length} از ${total} کاربر`;
+  renderPagination(total, page, 20);
+}
+
+function renderPagination(total, current, pageSize) {
+  const pages = Math.ceil(total / pageSize);
+  const nav = document.getElementById('paginationNav');
+  if (pages <= 1) { nav.innerHTML = ''; return; }
+  let html = '';
+  if (current > 1) html += `<li class="page-item"><a class="page-link" href="#" onclick="loadUsers(${current - 1});return false">قبل</a></li>`;
+  for (let p = Math.max(1, current - 2); p <= Math.min(pages, current + 2); p++) {
+    html += `<li class="page-item ${p === current ? 'active' : ''}"><a class="page-link" href="#" onclick="loadUsers(${p});return false">${p}</a></li>`;
+  }
+  if (current < pages) html += `<li class="page-item"><a class="page-link" href="#" onclick="loadUsers(${current + 1});return false">بعد</a></li>`;
+  nav.innerHTML = html;
+}
+
+async function loadTeamsForSelects() {
+  const res = await CRM.apiFetch('/auth/teams/?page_size=100');
+  if (!res) return;
+  const data = await res.json();
+  const teams = data.results || data;
+  const opts = teams.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+  document.getElementById('addTeam').insertAdjacentHTML('beforeend', opts);
+  document.getElementById('editTeam').insertAdjacentHTML('beforeend', opts);
+}
+
+async function openEditUser(id) {
+  const res = await CRM.apiFetch(`/auth/users/${id}/`);
+  if (!res) return;
+  const u = await res.json();
+  document.getElementById('editUserId').value = u.id;
+  document.getElementById('editFirstName').value = u.first_name;
+  document.getElementById('editLastName').value = u.last_name;
+  document.getElementById('editPhone').value = u.phone || '';
+  document.getElementById('editRole').value = u.role;
+  document.getElementById('editTeam').value = u.team || '';
+  document.getElementById('editIsActive').value = String(u.is_active);
+  document.getElementById('editUserError').classList.add('d-none');
+  new bootstrap.Modal(document.getElementById('editUserModal')).show();
+}
+
+async function toggleActive(id, isActive) {
+  const res = await CRM.apiFetch(`/auth/users/${id}/`, {
+    method: 'PATCH',
+    body: JSON.stringify({ is_active: !isActive }),
+  });
+  if (res && res.ok) {
+    CRM.showToast(isActive ? 'کاربر غیرفعال شد' : 'کاربر فعال شد', isActive ? 'warning' : 'success');
+    loadUsers(currentPage);
+  } else {
+    CRM.showToast('خطا در تغییر وضعیت', 'danger');
+  }
+}
+
+document.getElementById('btnSearch').addEventListener('click', () => {
+  currentSearch = document.getElementById('searchInput').value.trim();
+  currentRole = document.getElementById('roleFilter').value;
+  currentActive = document.getElementById('activeFilter').value;
+  loadUsers(1);
+});
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('btnSearch').click();
+});
+
+document.getElementById('btnSaveUser').addEventListener('click', async () => {
+  const errEl = document.getElementById('addUserError');
+  errEl.classList.add('d-none');
+  const payload = {
+    first_name: document.getElementById('addFirstName').value.trim(),
+    last_name: document.getElementById('addLastName').value.trim(),
+    email: document.getElementById('addEmail').value.trim(),
+    phone: document.getElementById('addPhone').value.trim() || undefined,
+    role: document.getElementById('addRole').value,
+    team: document.getElementById('addTeam').value || null,
+    password: document.getElementById('addPassword').value,
+    password_confirm: document.getElementById('addPasswordConfirm').value,
+  };
+  if (!payload.first_name || !payload.last_name || !payload.email || !payload.password) {
+    errEl.textContent = 'لطفاً فیلدهای الزامی را پر کنید.';
+    errEl.classList.remove('d-none');
+    return;
+  }
+  const res = await CRM.apiFetch('/auth/users/', { method: 'POST', body: JSON.stringify(payload) });
+  if (res && res.ok) {
+    bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+    CRM.showToast('کاربر با موفقیت ایجاد شد');
+    loadUsers(1);
+  } else {
+    const err = await res.json();
+    errEl.textContent = Object.values(err).flat().join(' | ');
+    errEl.classList.remove('d-none');
+  }
+});
+
+document.getElementById('btnUpdateUser').addEventListener('click', async () => {
+  const errEl = document.getElementById('editUserError');
+  errEl.classList.add('d-none');
+  const id = document.getElementById('editUserId').value;
+  const payload = {
+    first_name: document.getElementById('editFirstName').value.trim(),
+    last_name: document.getElementById('editLastName').value.trim(),
+    phone: document.getElementById('editPhone').value.trim() || undefined,
+    role: document.getElementById('editRole').value,
+    team: document.getElementById('editTeam').value || null,
+    is_active: document.getElementById('editIsActive').value === 'true',
+  };
+  const res = await CRM.apiFetch(`/auth/users/${id}/`, { method: 'PATCH', body: JSON.stringify(payload) });
+  if (res && res.ok) {
+    bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+    CRM.showToast('کاربر بروز شد');
+    loadUsers(currentPage);
+  } else {
+    const err = await res.json();
+    errEl.textContent = Object.values(err).flat().join(' | ');
+    errEl.classList.remove('d-none');
+  }
+});
+
+loadUsers();
+loadTeamsForSelects();
+</script>
+{% endblock %}

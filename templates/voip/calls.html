@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}تماس‌ها — CRM{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+<li class="breadcrumb-item active">تماس‌ها</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h4 class="fw-bold mb-0">تماس‌ها</h4>
+</div>
+
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-header bg-white"><strong>شماره‌گیری سریع</strong></div>
+  <div class="card-body">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4"><input id="dialPhone" class="form-control form-control-sm" placeholder="شماره تماس" /></div>
+      <div class="col-md-3"><input id="dialLeadId" class="form-control form-control-sm" placeholder="شناسه سرنخ (اختیاری)" /></div>
+      <div class="col-md-2"><button class="btn btn-primary btn-sm w-100" onclick="dialNow()">تماس</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>عامل</th>
+            <th>سرنخ</th>
+            <th>شماره</th>
+            <th>جهت</th>
+            <th>وضعیت</th>
+            <th>مدت</th>
+            <th>شروع</th>
+          </tr>
+        </thead>
+        <tbody id="callsTbody"><tr><td colspan="7" class="text-center py-3">در حال بارگذاری…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function dialNow() {
+  const phone_number = document.getElementById('dialPhone').value.trim();
+  const leadRaw = document.getElementById('dialLeadId').value.trim();
+  if (!phone_number) return CRM.showToast('شماره تماس را وارد کنید.', 'warning');
+  const payload = { phone_number };
+  if (leadRaw) payload.lead_id = Number(leadRaw);
+  const res = await CRM.apiFetch('/voip/calls/dial/', { method: 'POST', body: JSON.stringify(payload) });
+  if (!res || !res.ok) return CRM.showToast('شماره‌گیری ناموفق بود.', 'danger');
+  CRM.showToast('تماس ثبت شد.', 'success');
+  loadCalls();
+}
+
+async function loadCalls() {
+  const tbody = document.getElementById('callsTbody');
+  const res = await CRM.apiFetch('/voip/calls/?page_size=100');
+  if (!res || !res.ok) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-3">خطا</td></tr>';
+    return;
+  }
+  const data = await res.json();
+  const items = data.results || data;
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3">بدون داده</td></tr>';
+    return;
+  }
+  tbody.innerHTML = items.map(c => `
+    <tr>
+      <td>${c.agent_name || '—'}</td>
+      <td>${c.lead_name || '—'}</td>
+      <td>${c.phone_number || '—'}</td>
+      <td>${c.direction || '—'}</td>
+      <td>${CRM.statusBadge(c.status)}</td>
+      <td>${c.duration_formatted || c.duration_seconds || 0}</td>
+      <td>${CRM.formatDate(c.started_at)}</td>
+    </tr>
+  `).join('');
+}
+
+document.addEventListener('DOMContentLoaded', loadCalls);
+</script>
+{% endblock %}

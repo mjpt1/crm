@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}پروفایل — CRM{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+<li class="breadcrumb-item active">پروفایل</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-0 pt-4 px-4">
+        <h5 class="fw-bold mb-0">پروفایل من</h5>
+      </div>
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-4 mb-4">
+          {% if user.avatar %}
+            <img src="{{ user.avatar.url }}" class="rounded-circle shadow"
+                 width="80" height="80" alt="تصویر پروفایل">
+          {% else %}
+            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center shadow"
+                 style="width:80px;height:80px;font-size:1.8rem;font-weight:bold;color:#fff;">
+              {{ user.first_name|first|upper }}
+            </div>
+          {% endif %}
+          <div>
+            <h5 class="fw-bold mb-0">{{ user.get_full_name }}</h5>
+            <small class="text-muted">{{ user.email }}</small><br>
+            <span class="badge bg-primary mt-1">{{ user.get_role_display }}</span>
+            {% if user.team %}
+              <span class="badge bg-secondary mt-1">{{ user.team.name }}</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <table class="table table-borderless">
+          <tr><th class="text-muted" style="width:150px">ایمیل</th><td>{{ user.email }}</td></tr>
+          <tr><th class="text-muted">شماره تماس</th><td>{{ user.phone|default:"—" }}</td></tr>
+          <tr><th class="text-muted">نقش</th><td>{{ user.get_role_display }}</td></tr>
+          <tr><th class="text-muted">تیم</th><td>{{ user.team.name|default:"—" }}</td></tr>
+          <tr><th class="text-muted">عضو از</th><td>{{ user.date_joined|date:"d M Y" }}</td></tr>
+        </table>
+
+        <hr />
+        <h6 class="fw-semibold mb-3">تغییر رمز عبور</h6>
+        <div id="pw-success" class="alert alert-success d-none"></div>
+        <div id="pw-error" class="alert alert-danger d-none"></div>
+        <form id="pw-form" class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">رمز عبور فعلی</label>
+            <input type="password" class="form-control" id="old_password" required />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">رمز عبور جدید</label>
+            <input type="password" class="form-control" id="new_password" required />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">تکرار رمز عبور جدید</label>
+            <input type="password" class="form-control" id="new_password_confirm" required />
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary">ذخیره رمز عبور</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const API_BASE = '/api/v1';
+const TOKEN = localStorage.getItem('access_token');
+
+document.getElementById('pw-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const successDiv = document.getElementById('pw-success');
+  const errorDiv   = document.getElementById('pw-error');
+  successDiv.classList.add('d-none');
+  errorDiv.classList.add('d-none');
+
+  const payload = {
+    old_password: document.getElementById('old_password').value,
+    new_password: document.getElementById('new_password').value,
+    new_password_confirm: document.getElementById('new_password_confirm').value,
+  };
+
+  const res = await fetch(`${API_BASE}/auth/users/change-password/`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (res.ok) {
+    successDiv.textContent = 'رمز عبور با موفقیت تغییر یافت.';
+    successDiv.classList.remove('d-none');
+    e.target.reset();
+  } else {
+    errorDiv.textContent = JSON.stringify(data.errors || data.detail || data);
+    errorDiv.classList.remove('d-none');
+  }
+});
+</script>
+{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+<li class="breadcrumb-item active">Profile</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-0 pt-4 px-4">
+        <h5 class="fw-bold mb-0">My Profile</h5>
+      </div>
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-4 mb-4">
+          {% if user.avatar %}
+            <img src="{{ user.avatar.url }}" class="rounded-circle shadow"
+                 width="80" height="80" alt="Avatar">
+          {% else %}
+            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center shadow"
+                 style="width:80px;height:80px;font-size:1.8rem;font-weight:bold;color:#fff;">
+              {{ user.first_name|first|upper }}
+            </div>
+          {% endif %}
+          <div>
+            <h5 class="fw-bold mb-0">{{ user.get_full_name }}</h5>
+            <small class="text-muted">{{ user.email }}</small><br>
+            <span class="badge bg-primary mt-1">{{ user.get_role_display }}</span>
+            {% if user.team %}
+              <span class="badge bg-secondary mt-1">{{ user.team.name }}</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <table class="table table-borderless">
+          <tr><th class="text-muted" style="width:150px">Email</th><td>{{ user.email }}</td></tr>
+          <tr><th class="text-muted">Phone</th><td>{{ user.phone|default:"—" }}</td></tr>
+          <tr><th class="text-muted">Role</th><td>{{ user.get_role_display }}</td></tr>
+          <tr><th class="text-muted">Team</th><td>{{ user.team.name|default:"—" }}</td></tr>
+          <tr><th class="text-muted">Member since</th><td>{{ user.date_joined|date:"d M Y" }}</td></tr>
+        </table>
+
+        <hr />
+        <h6 class="fw-semibold mb-3">Change Password</h6>
+        <div id="pw-success" class="alert alert-success d-none"></div>
+        <div id="pw-error" class="alert alert-danger d-none"></div>
+        <form id="pw-form" class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Current Password</label>
+            <input type="password" class="form-control" id="old_password" required />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">New Password</label>
+            <input type="password" class="form-control" id="new_password" required />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Confirm New Password</label>
+            <input type="password" class="form-control" id="new_password_confirm" required />
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary">Update Password</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const API_BASE = '/api/v1';
+const TOKEN = localStorage.getItem('access_token');
+
+document.getElementById('pw-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const successDiv = document.getElementById('pw-success');
+  const errorDiv   = document.getElementById('pw-error');
+  successDiv.classList.add('d-none');
+  errorDiv.classList.add('d-none');
+
+  const payload = {
+    old_password: document.getElementById('old_password').value,
+    new_password: document.getElementById('new_password').value,
+    new_password_confirm: document.getElementById('new_password_confirm').value,
+  };
+
+  const res = await fetch(`${API_BASE}/auth/users/change-password/`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (res.ok) {
+    successDiv.textContent = 'Password changed successfully.';
+    successDiv.classList.remove('d-none');
+    e.target.reset();
+  } else {
+    const errors = JSON.stringify(data.errors || data.detail || data);
+    errorDiv.textContent = errors;
+    errorDiv.classList.remove('d-none');
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}پرداخت‌ها — CRM{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+<li class="breadcrumb-item active">پرداخت‌ها</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h4 class="fw-bold mb-0">پرداخت‌های آنلاین</h4>
+</div>
+
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-body">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label">انتخاب فاکتور برای پرداخت</label>
+        <select id="invoiceSelect" class="form-select form-select-sm"></select>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-primary btn-sm w-100" onclick="initiatePayment()">ایجاد لینک پرداخت</button>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">تایید دستی با Track ID</label>
+        <input id="trackIdInput" class="form-control form-control-sm" placeholder="Track ID" />
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-outline-success btn-sm w-100" onclick="verifyPayment()">تایید</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>فاکتور</th>
+            <th>مبلغ</th>
+            <th>وضعیت</th>
+            <th>Track ID</th>
+            <th>ایجادکننده</th>
+            <th>زمان</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="paymentsTbody">
+          <tr><td colspan="7" class="text-center py-4 text-muted">در حال بارگذاری…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function loadInvoicesForPayment() {
+  const res = await CRM.apiFetch('/sales/invoices/?status=approved&page_size=100');
+  const select = document.getElementById('invoiceSelect');
+  if (!res || !res.ok) {
+    select.innerHTML = '<option value="">خطا در بارگذاری فاکتورها</option>';
+    return;
+  }
+  const data = await res.json();
+  const items = data.results || data;
+  if (!items.length) {
+    select.innerHTML = '<option value="">فاکتور قابل پرداختی موجود نیست</option>';
+    return;
+  }
+  select.innerHTML = items.map(i => `<option value="${i.id}">${i.number || i.invoice_number} - ${i.customer_name || 'مشتری'}</option>`).join('');
+}
+
+async function initiatePayment() {
+  const invoiceId = document.getElementById('invoiceSelect').value;
+  if (!invoiceId) return CRM.showToast('فاکتور را انتخاب کنید.', 'warning');
+  const res = await CRM.apiFetch('/payments/online/initiate/', {
+    method: 'POST',
+    body: JSON.stringify({ invoice_id: Number(invoiceId) })
+  });
+  const data = await res.json();
+  if (!res.ok) return CRM.showToast(data.detail || 'خطا در ایجاد لینک پرداخت.', 'danger');
+  CRM.showToast('لینک پرداخت ایجاد شد.', 'success');
+  if (data.payment_url) window.open(data.payment_url, '_blank');
+  loadPayments();
+}
+
+async function verifyPayment() {
+  const trackId = document.getElementById('trackIdInput').value.trim();
+  if (!trackId) return CRM.showToast('Track ID را وارد کنید.', 'warning');
+  const res = await CRM.apiFetch('/payments/online/verify/', {
+    method: 'POST',
+    body: JSON.stringify({ track_id: trackId })
+  });
+  const data = await res.json();
+  if (!res.ok) return CRM.showToast(data.detail || 'تایید ناموفق بود.', 'danger');
+  CRM.showToast('پرداخت تایید شد.', 'success');
+  loadPayments();
+}
+
+async function loadPayments() {
+  const tbody = document.getElementById('paymentsTbody');
+  const res = await CRM.apiFetch('/payments/online/?page_size=100');
+  if (!res || !res.ok) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">خطا در بارگذاری</td></tr>';
+    return;
+  }
+  const data = await res.json();
+  const items = data.results || data;
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">رکوردی یافت نشد.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = items.map(p => `
+    <tr>
+      <td>${p.invoice_number || '—'}</td>
+      <td>${CRM.formatCurrency(p.amount || 0)}</td>
+      <td>${CRM.statusBadge(p.status)}</td>
+      <td>${p.track_id || '—'}</td>
+      <td>${p.initiated_by_name || '—'}</td>
+      <td>${CRM.formatDate(p.created_at)}</td>
+      <td>${p.payment_url ? `<a class="btn btn-sm btn-outline-primary" target="_blank" href="${p.payment_url}">لینک</a>` : ''}</td>
+    </tr>
+  `).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadInvoicesForPayment();
+  loadPayments();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}اهداف و پاداش — CRM{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+<li class="breadcrumb-item active">اهداف و پاداش</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h4 class="fw-bold mb-0">اهداف و پاداش</h4>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white"><strong>اهداف</strong></div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead class="table-light"><tr><th>عنوان</th><th>نوع</th><th>بازه</th><th>پیشرفت</th></tr></thead>
+            <tbody id="targetsTbody"><tr><td colspan="4" class="text-center py-3">در حال بارگذاری…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white"><strong>ثبت هدف جدید</strong></div>
+      <div class="card-body">
+        <div class="mb-2"><input id="tTitle" class="form-control form-control-sm" placeholder="عنوان" /></div>
+        <div class="mb-2">
+          <select id="tType" class="form-select form-select-sm">
+            <option value="revenue">هدف درآمد</option>
+            <option value="invoice_count">تعداد فاکتور</option>
+            <option value="lead_conversion">نرخ تبدیل سرنخ</option>
+          </select>
+        </div>
+        <div class="mb-2"><input id="tValue" type="number" class="form-control form-control-sm" placeholder="مقدار هدف" /></div>
+        <div class="row g-2 mb-2">
+          <div class="col"><input id="tStart" type="text" class="form-control form-control-sm" dir="ltr" placeholder="از: ۱۴۰۳/۰۱/۰۱" /></div>
+          <div class="col"><input id="tEnd" type="text" class="form-control form-control-sm" dir="ltr" placeholder="تا: ۱۴۰۳/۱۲/۲۹" /></div>
+        </div>
+        <button class="btn btn-primary btn-sm w-100" onclick="createTarget()">ثبت هدف</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white"><strong>پاداش‌ها</strong></div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead class="table-light"><tr><th>عنوان</th><th>کاربر</th><th>مبلغ</th><th>زمان</th></tr></thead>
+            <tbody id="rewardsTbody"><tr><td colspan="4" class="text-center py-3">در حال بارگذاری…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white"><strong>ثبت پاداش جدید</strong></div>
+      <div class="card-body">
+        <div class="mb-2"><input id="rTitle" class="form-control form-control-sm" placeholder="عنوان پاداش" /></div>
+        <div class="mb-2">
+          <select id="rUser" class="form-select form-select-sm">
+            <option value="">انتخاب کاربر…</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <select id="rTarget" class="form-select form-select-sm">
+            <option value="">انتخاب هدف (اختیاری)…</option>
+          </select>
+        </div>
+        <div class="mb-2"><input id="rAmount" type="number" class="form-control form-control-sm" placeholder="مبلغ (تومان)" /></div>
+        <button class="btn btn-success btn-sm w-100" onclick="createReward()">ثبت پاداش</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const TARGET_TYPE_LABELS = {
+  revenue: 'هدف درآمد',
+  invoice_count: 'تعداد فاکتور',
+  lead_conversion: 'نرخ تبدیل',
+};
+
+async function loadTargets() {
+  const tbody = document.getElementById('targetsTbody');
+  const res = await CRM.apiFetch('/rewards/targets/?page_size=100');
+  if (!res || !res.ok) {
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-3">خطا</td></tr>';
+    return;
+  }
+  const data = await res.json();
+  const items = data.results || data;
+
+  // populate rTarget dropdown too
+  const rTargetSel = document.getElementById('rTarget');
+  const existingOpts = rTargetSel.querySelectorAll('option:not([value=""])');
+  existingOpts.forEach(o => o.remove());
+  items.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.id;
+    opt.textContent = t.title;
+    rTargetSel.appendChild(opt);
+  });
+
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">بدون داده</td></tr>';
+    return;
+  }
+  tbody.innerHTML = items.map(t => `
+    <tr>
+      <td>${t.title}</td>
+      <td>${TARGET_TYPE_LABELS[t.target_type] || t.target_type}</td>
+      <td>${CRM.formatDate(t.period_start)} تا ${CRM.formatDate(t.period_end)}</td>
+      <td>
+        <div class="progress" style="height:6px">
+          <div class="progress-bar bg-success" style="width:${Math.min(t.achievement?.progress_percent||0,100)}%"></div>
+        </div>
+        <small>${t.achievement?.progress_percent ?? 0}%</small>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function createTarget() {
+  const startISO = CRM.toISO(document.getElementById('tStart').value);
+  const endISO   = CRM.toISO(document.getElementById('tEnd').value);
+  if (!startISO || !endISO) {
+    CRM.showToast('تاریخ را به فرمت صحیح وارد کنید (مثال: ۱۴۰۳/۰۱/۰۱)', 'warning');
+    return;
+  }
+  const payload = {
+    title: document.getElementById('tTitle').value.trim(),
+    target_type: document.getElementById('tType').value,
+    target_value: Number(document.getElementById('tValue').value || 0),
+    period_start: startISO,
+    period_end: endISO,
+  };
+  if (!payload.title) { CRM.showToast('عنوان را وارد کنید', 'warning'); return; }
+  const res = await CRM.apiFetch('/rewards/targets/', { method: 'POST', body: JSON.stringify(payload) });
+  if (!res || !res.ok) {
+    const err = res ? await res.json() : {};
+    CRM.showToast(Object.values(err).flat().join(' | ') || 'ثبت هدف ناموفق بود.', 'danger');
+    return;
+  }
+  CRM.showToast('هدف ثبت شد.', 'success');
+  document.getElementById('tTitle').value = '';
+  document.getElementById('tValue').value = '';
+  document.getElementById('tStart').value = '';
+  document.getElementById('tEnd').value = '';
+  loadTargets();
+}
+
+async function loadRewards() {
+  const tbody = document.getElementById('rewardsTbody');
+  const res = await CRM.apiFetch('/rewards/rewards/?page_size=100');
+  if (!res || !res.ok) {
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-3">خطا</td></tr>';
+    return;
+  }
+  const data = await res.json();
+  const items = data.results || data;
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">بدون داده</td></tr>';
+    return;
+  }
+  tbody.innerHTML = items.map(r => `
+    <tr>
+      <td>${r.title}</td>
+      <td>${r.user_name || r.user || '—'}</td>
+      <td>${CRM.formatCurrency(r.amount || 0)}</td>
+      <td>${CRM.formatDate(r.granted_at)}</td>
+    </tr>
+  `).join('');
+}
+
+async function loadUsersForReward() {
+  const res = await CRM.apiFetch('/auth/users/?page_size=200');
+  if (!res || !res.ok) return;
+  const data = await res.json();
+  const users = data.results || data;
+  const sel = document.getElementById('rUser');
+  users.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.id;
+    opt.textContent = `${u.first_name} ${u.last_name}`;
+    sel.appendChild(opt);
+  });
+}
+
+async function createReward() {
+  const userId = document.getElementById('rUser').value;
+  if (!userId) { CRM.showToast('کاربر را انتخاب کنید', 'warning'); return; }
+  const payload = {
+    title: document.getElementById('rTitle').value.trim(),
+    user: Number(userId),
+    amount: Number(document.getElementById('rAmount').value || 0),
+  };
+  const targetId = document.getElementById('rTarget').value;
+  if (targetId) payload.target = Number(targetId);
+  if (!payload.title) { CRM.showToast('عنوان پاداش را وارد کنید', 'warning'); return; }
+  const res = await CRM.apiFetch('/rewards/rewards/', { method: 'POST', body: JSON.stringify(payload) });
+  if (!res || !res.ok) {
+    const err = res ? await res.json() : {};
+    CRM.showToast(Object.values(err).flat().join(' | ') || 'ثبت پاداش ناموفق بود.', 'danger');
+    return;
+  }
+  CRM.showToast('پاداش ثبت شد.', 'success');
+  document.getElementById('rTitle').value = '';
+  document.getElementById('rAmount').value = '';
+  document.getElementById('rUser').value = '';
+  document.getElementById('rTarget').value = '';
+  loadRewards();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadTargets();
+  loadRewards();
+  loadUsersForReward();
+});
+</script>
+{% endblock %}

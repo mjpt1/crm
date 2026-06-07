@@ -1,0 +1,190 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="سیستم مدیریت ارتباط با مشتری" />
+  <title>{% block title %}سیستم CRM{% endblock %}</title>
+
+  <!-- Bootstrap 5 RTL -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css"
+        integrity="sha384-dpuaG1suU0eT09tx5plTaGMLBsfDLzUCCUXOY2j/LSvXYuG6Bqs43ALlhIqAJVRb"
+        crossorigin="anonymous" />
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+
+  <!-- Vazirmatn Font (فونت فارسی) -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" />
+
+  <!-- Custom Styles -->
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/custom.css' %}" />
+
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+{% if user.is_authenticated %}
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  سایدبار                                                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div class="d-flex" id="wrapper">
+
+  <nav id="sidebar" class="bg-dark text-white d-flex flex-column p-3" style="min-width:240px;min-height:100vh;">
+    <a href="{% url 'dashboard' %}" class="navbar-brand text-white fw-bold fs-5 mb-4 d-flex align-items-center gap-2">
+      <i class="bi bi-grid-3x3-gap-fill text-primary"></i> سیستم CRM
+    </a>
+
+    <ul class="nav nav-pills flex-column mb-auto gap-1">
+      <li class="nav-item">
+        <a href="{% url 'dashboard' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+          <i class="bi bi-speedometer2 me-2"></i> داشبورد
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'leads_list' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'leads_list' %}active{% endif %}">
+          <i class="bi bi-people me-2"></i> سرنخ‌ها
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'invoice_list' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'invoice_list' %}active{% endif %}">
+          <i class="bi bi-receipt me-2"></i> فاکتورها
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'payments_page' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'payments_page' %}active{% endif %}">
+          <i class="bi bi-credit-card me-2"></i> پرداخت‌ها
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'reports_page' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'reports_page' %}active{% endif %}">
+          <i class="bi bi-bar-chart-line me-2"></i> گزارش‌ها
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'rewards_page' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'rewards_page' %}active{% endif %}">
+          <i class="bi bi-trophy me-2"></i> اهداف و پاداش
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'leave_page' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'leave_page' %}active{% endif %}">
+          <i class="bi bi-calendar3 me-2"></i> مرخصی
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'calls_page' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'calls_page' %}active{% endif %}">
+          <i class="bi bi-telephone me-2"></i> تماس‌ها
+        </a>
+      </li>
+
+      {% if user.is_superuser or user.role == 'super_admin' or user.role == 'sales_manager' %}
+      <hr class="border-secondary" />
+      <li class="nav-item">
+        <a href="{% url 'users_page' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'users_page' %}active{% endif %}">
+          <i class="bi bi-person-gear me-2"></i> کاربران
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="{% url 'teams_page' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'teams_page' %}active{% endif %}">
+          <i class="bi bi-diagram-3 me-2"></i> تیم‌ها
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+
+    <hr class="border-secondary" />
+    <div class="d-flex align-items-center gap-2">
+      {% if user.avatar %}
+        <img src="{{ user.avatar.url }}" class="rounded-circle" width="36" height="36" alt="تصویر">
+      {% else %}
+        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center"
+             style="width:36px;height:36px;font-size:.8rem;font-weight:bold;color:#fff;">
+          {{ user.first_name|first|upper }}
+        </div>
+      {% endif %}
+      <div class="small">
+        <div class="fw-semibold text-truncate" style="max-width:130px">{{ user.get_full_name }}</div>
+        <div class="text-secondary text-truncate" style="max-width:130px;font-size:.75rem;">
+          {{ user.get_role_display }}
+        </div>
+      </div>
+      <a href="{% url 'logout' %}" class="ms-auto text-secondary" title="خروج">
+        <i class="bi bi-box-arrow-right fs-5"></i>
+      </a>
+    </div>
+  </nav>
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  محتوای اصلی                                                               -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+  <div id="page-content" class="flex-grow-1 bg-light">
+    <!-- نوار بالا -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-4 py-2 shadow-sm">
+      <button class="btn btn-sm btn-outline-secondary me-3" id="sidebarToggle">
+        <i class="bi bi-list fs-5"></i>
+      </button>
+      <nav aria-label="breadcrumb" class="flex-grow-1">
+        <ol class="breadcrumb mb-0">
+          {% block breadcrumb %}
+          <li class="breadcrumb-item active">داشبورد</li>
+          {% endblock %}
+        </ol>
+      </nav>
+      <div class="d-flex align-items-center gap-3">
+        <a href="{% url 'profile' %}" class="text-secondary text-decoration-none small">
+          <i class="bi bi-person-circle me-1"></i> پروفایل
+        </a>
+      </div>
+    </nav>
+
+    <!-- پیام‌های سیستم -->
+    {% if messages %}
+    <div class="px-4 pt-3">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- محتوای صفحه -->
+    <main class="p-4">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+</div><!-- #wrapper -->
+
+{% else %}
+<!-- ─── صفحات بدون احراز هویت (مثل صفحه ورود) ─── -->
+<div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light">
+  {% block auth_content %}{% endblock %}
+</div>
+{% endif %}
+
+<!-- Bootstrap 5 RTL JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<!-- Jalaali (Persian calendar) -->
+<script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.1.1/dist/jalaali.js"></script>
+<!-- Custom JS -->
+{% load static %}
+<script src="{% static 'js/app.js' %}"></script>
+{% block extra_js %}{% endblock %}
+
+<script>
+  document.getElementById('sidebarToggle')?.addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('d-none');
+  });
+</script>
+</body>
+</html>

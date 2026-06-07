@@ -1,0 +1,220 @@
+﻿{% extends "base.html" %}
+{% load static %}
+
+{% block title %}سرنخ‌ها — CRM{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+<li class="breadcrumb-item active">سرنخ‌ها</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h4 class="fw-bold mb-0">سرنخ‌ها</h4>
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-primary btn-sm" onclick="requestLeads()">
+      <i class="bi bi-arrow-down-circle me-1"></i> درخواست سرنخ جدید
+    </button>
+  </div>
+</div>
+
+<!-- فیلترها -->
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-body py-2 px-4">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-4">
+        <input type="search" class="form-control form-control-sm" id="searchInput"
+               placeholder="جستجو بر اساس نام، ایمیل، شماره تماس…" />
+      </div>
+      <div class="col-md-2">
+        <select class="form-select form-select-sm" id="statusFilter">
+          <option value="">همه وضعیت‌ها</option>
+          <option value="new">جدید</option>
+          <option value="contacted">تماس‌گرفته‌شده</option>
+          <option value="qualified">واجد شرایط</option>
+          <option value="negotiation">در مذاکره</option>
+          <option value="won">برنده</option>
+          <option value="lost">از دست‌رفته</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select class="form-select form-select-sm" id="sourceFilter">
+          <option value="">همه منابع</option>
+          <option value="website">وب‌سایت</option>
+          <option value="referral">معرفی</option>
+          <option value="social_media">شبکه اجتماعی</option>
+          <option value="cold_call">تماس سرد</option>
+          <option value="exhibition">نمایشگاه</option>
+          <option value="partner">شریک</option>
+          <option value="other">سایر</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-primary btn-sm w-100" onclick="loadLeads()">
+          <i class="bi bi-search me-1"></i> فیلتر
+        </button>
+      </div>
+      <div class="col-md-2 text-end">
+        <button class="btn btn-outline-secondary btn-sm" onclick="clearFilters()">پاک کردن</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- جدول -->
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>نام</th>
+            <th>شماره تماس</th>
+            <th>ایمیل</th>
+            <th>منبع</th>
+            <th>وضعیت</th>
+            <th>تخصیص‌یافته به</th>
+            <th>تاریخ ثبت</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="leads-tbody">
+          <tr><td colspan="8" class="text-center py-4 text-muted">در حال بارگذاری…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- صفحه‌بندی -->
+<div class="d-flex justify-content-between align-items-center mt-3">
+  <small class="text-muted" id="pagination-info"></small>
+  <nav>
+    <ul class="pagination pagination-sm mb-0" id="pagination-nav"></ul>
+  </nav>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPage = 1;
+const PAGE_SIZE = 20;
+
+const STATUS_LABELS = {
+  new: 'جدید', contacted: 'تماس‌گرفته‌شده', qualified: 'واجد شرایط',
+  negotiation: 'در مذاکره', won: 'برنده', lost: 'از دست‌رفته'
+};
+const SOURCE_LABELS = {
+  website: 'وب‌سایت', referral: 'معرفی', social_media: 'شبکه اجتماعی',
+  cold_call: 'تماس سرد', exhibition: 'نمایشگاه', partner: 'شریک', other: 'سایر'
+};
+
+function buildQueryString() {
+  const params = new URLSearchParams();
+  const search = document.getElementById('searchInput').value.trim();
+  const status = document.getElementById('statusFilter').value;
+  const source = document.getElementById('sourceFilter').value;
+  if (search) params.append('search', search);
+  if (status) params.append('status', status);
+  if (source) params.append('source', source);
+  params.append('page', currentPage);
+  params.append('page_size', PAGE_SIZE);
+  return params.toString();
+}
+
+async function loadLeads() {
+  const tbody = document.getElementById('leads-tbody');
+  tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4"><span class="spinner-border spinner-border-sm"></span></td></tr>';
+  const res = await CRM.apiFetch(`/leads/?${buildQueryString()}`);
+  if (!res || !res.ok) {
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">خطا در بارگذاری سرنخ‌ها</td></tr>';
+    return;
+  }
+  const data = await res.json();
+  renderLeads(data);
+}
+
+function renderLeads(data) {
+  const tbody = document.getElementById('leads-tbody');
+  const items = data.results || data;
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">سرنخی یافت نشد.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = items.map(lead => `
+    <tr>
+      <td>
+        <div class="fw-semibold">${lead.first_name} ${lead.last_name}</div>
+        ${lead.company_name ? `<small class="text-muted">${lead.company_name}</small>` : ''}
+      </td>
+      <td>${lead.phone || '—'}</td>
+      <td>${lead.email || '—'}</td>
+      <td><span class="badge bg-light text-dark border">${SOURCE_LABELS[lead.source] || lead.source}</span></td>
+      <td>
+        <select class="form-select form-select-sm border-0 p-0 bg-transparent"
+                data-id="${lead.id}" onchange="changeStatus(this)">
+          ${Object.entries(STATUS_LABELS).map(([val, label]) =>
+            `<option value="${val}" ${lead.status === val ? 'selected' : ''}>${label}</option>`
+          ).join('')}
+        </select>
+      </td>
+      <td>${lead.assigned_to_name || '<span class="text-muted">تخصیص‌نیافته</span>'}</td>
+      <td>${CRM.formatDate(lead.created_at)}</td>
+      <td>
+        <a href="/leads/${lead.id}/" class="btn btn-sm btn-outline-primary py-0 px-2">
+          <i class="bi bi-eye"></i>
+        </a>
+      </td>
+    </tr>
+  `).join('');
+
+  document.getElementById('pagination-info').textContent = `${data.count || items.length} سرنخ`;
+  renderPagination(data.count, data.next, data.previous);
+}
+
+async function changeStatus(selectEl) {
+  const id = selectEl.dataset.id;
+  const res = await CRM.apiFetch(`/leads/${id}/update_status/`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status: selectEl.value }),
+  });
+  if (res && res.ok) CRM.showToast('وضعیت با موفقیت تغییر کرد.', 'success');
+  else { CRM.showToast('خطا در تغییر وضعیت.', 'danger'); loadLeads(); }
+}
+
+async function requestLeads() {
+  const res = await CRM.apiFetch('/leads/request_leads/', { method: 'POST' });
+  if (res && res.ok) {
+    const data = await res.json();
+    CRM.showToast(`${data.assigned_count ?? 0} سرنخ به شما تخصیص یافت.`, 'success');
+    loadLeads();
+  } else CRM.showToast('خطا در درخواست سرنخ.', 'danger');
+}
+
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('statusFilter').value = '';
+  document.getElementById('sourceFilter').value = '';
+  currentPage = 1;
+  loadLeads();
+}
+
+function renderPagination(total, next, previous) {
+  document.getElementById('pagination-nav').innerHTML = `
+    <li class="page-item ${!previous ? 'disabled' : ''}">
+      <a class="page-link" href="#" onclick="event.preventDefault();goToPage(${currentPage - 1})">«</a>
+    </li>
+    <li class="page-item disabled"><a class="page-link">صفحه ${currentPage}</a></li>
+    <li class="page-item ${!next ? 'disabled' : ''}">
+      <a class="page-link" href="#" onclick="event.preventDefault();goToPage(${currentPage + 1})">»</a>
+    </li>`;
+}
+
+function goToPage(page) { currentPage = page; loadLeads(); }
+
+document.addEventListener('DOMContentLoaded', loadLeads);
+document.getElementById('searchInput').addEventListener('keyup', (e) => {
+  if (e.key === 'Enter') loadLeads();
+});
+</script>
+{% endblock %}

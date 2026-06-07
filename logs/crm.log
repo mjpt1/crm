@@ -1,0 +1,819 @@
+INFO 2026-06-04 08:10:42,797 autoreload 17984 18312 Watching for file changes with StatReloader
+INFO 2026-06-04 08:25:00,863 basehttp 17984 13320 "GET / HTTP/1.1" 302 0
+INFO 2026-06-04 08:25:01,110 basehttp 17984 13320 "GET /login/ HTTP/1.1" 200 4874
+INFO 2026-06-04 08:25:02,480 basehttp 17984 13320 "GET /static/css/custom.css HTTP/1.1" 200 2076
+INFO 2026-06-04 08:25:02,493 basehttp 17984 17952 "GET /static/js/app.js HTTP/1.1" 200 4794
+INFO 2026-06-04 08:25:27,517 basehttp 17984 18984 "GET /login/ HTTP/1.1" 200 4874
+INFO 2026-06-04 08:25:27,616 basehttp 17984 18984 "GET /static/css/custom.css HTTP/1.1" 200 2076
+INFO 2026-06-04 08:25:27,623 basehttp 17984 17204 "GET /static/js/app.js HTTP/1.1" 200 4794
+WARNING 2026-06-04 08:25:28,692 log 17984 17204 Not Found: /favicon.ico
+WARNING 2026-06-04 08:25:28,984 basehttp 17984 17204 "GET /favicon.ico HTTP/1.1" 404 3690
+INFO 2026-06-04 08:25:45,915 basehttp 17984 17952 "GET /admin/ HTTP/1.1" 302 0
+INFO 2026-06-04 08:25:45,967 basehttp 17984 17952 "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4167
+INFO 2026-06-04 08:25:46,136 basehttp 17984 13320 "GET /static/admin/css/dark_mode.css HTTP/1.1" 200 2682
+INFO 2026-06-04 08:25:46,139 basehttp 17984 17952 "GET /static/admin/css/base.css HTTP/1.1" 200 21544
+INFO 2026-06-04 08:25:46,142 basehttp 17984 17112 "GET /static/admin/css/login.css HTTP/1.1" 200 958
+INFO 2026-06-04 08:25:46,144 basehttp 17984 7212 "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 200 2810
+INFO 2026-06-04 08:25:46,144 basehttp 17984 18836 "GET /static/admin/css/responsive.css HTTP/1.1" 200 17905
+INFO 2026-06-04 08:25:46,159 basehttp 17984 17112 "GET /static/admin/js/theme.js HTTP/1.1" 200 1943
+INFO 2026-06-04 08:25:46,179 basehttp 17984 18836 "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 200 3063
+INFO 2026-06-04 08:25:49,963 basehttp 17984 18836 "GET /api/docs/ HTTP/1.1" 200 4640
+INFO 2026-06-04 08:25:52,588 basehttp 17984 18836 "GET /api/schema/ HTTP/1.1" 200 257970
+WARNING 2026-06-04 08:25:58,394 log 17984 18836 Method Not Allowed: /api/v1/auth/login/
+WARNING 2026-06-04 08:25:58,395 basehttp 17984 18836 "GET /api/v1/auth/login/ HTTP/1.1" 405 7469
+INFO 2026-06-04 08:25:59,313 basehttp 17984 17952 "GET /static/rest_framework/css/default.css HTTP/1.1" 200 1152
+INFO 2026-06-04 08:25:59,314 basehttp 17984 17112 "GET /static/rest_framework/css/bootstrap-tweaks.css HTTP/1.1" 200 3426
+INFO 2026-06-04 08:25:59,315 basehttp 17984 7212 "GET /static/rest_framework/css/prettify.css HTTP/1.1" 200 817
+INFO 2026-06-04 08:25:59,318 basehttp 17984 18836 "GET /static/rest_framework/css/bootstrap.min.css HTTP/1.1" 200 121457
+INFO 2026-06-04 08:25:59,321 basehttp 17984 13320 "GET /static/rest_framework/js/jquery-3.7.1.min.js HTTP/1.1" 200 87533
+INFO 2026-06-04 08:25:59,326 basehttp 17984 17952 "GET /static/rest_framework/js/csrf.js HTTP/1.1" 200 1793
+INFO 2026-06-04 08:25:59,338 basehttp 17984 5532 "GET /static/rest_framework/js/ajax-form.js HTTP/1.1" 200 3796
+INFO 2026-06-04 08:25:59,736 basehttp 17984 17112 "GET /static/rest_framework/js/bootstrap.min.js HTTP/1.1" 200 39680
+INFO 2026-06-04 08:25:59,914 basehttp 17984 17952 "GET /static/rest_framework/js/default.js HTTP/1.1" 200 1268
+INFO 2026-06-04 08:25:59,915 basehttp 17984 5532 "GET /static/rest_framework/js/load-ajax-form.js HTTP/1.1" 200 59
+INFO 2026-06-04 08:25:59,916 basehttp 17984 7212 "GET /static/rest_framework/js/prettify-min.js HTTP/1.1" 200 13632
+INFO 2026-06-04 08:26:00,036 basehttp 17984 18836 "GET /static/rest_framework/img/grid.png HTTP/1.1" 200 1458
+INFO 2026-06-04 08:27:11,871 basehttp 17984 17204 "POST /api/v1/auth/login/ HTTP/1.1" 200 940
+INFO 2026-06-04 08:27:11,907 basehttp 17984 17204 "GET /dashboard/ HTTP/1.1" 302 0
+WARNING 2026-06-04 08:27:11,934 log 17984 17204 Not Found: /accounts/login/
+WARNING 2026-06-04 08:27:11,934 basehttp 17984 17204 "GET /accounts/login/?next=/dashboard/ HTTP/1.1" 404 3719
+INFO 2026-06-04 08:28:21,189 autoreload 17984 18312 C:\Users\mjpt1\Desktop\crm\config\settings\base.py changed, reloading.
+INFO 2026-06-04 08:28:24,079 autoreload 18724 14064 Watching for file changes with StatReloader
+INFO 2026-06-04 08:28:32,725 autoreload 18724 14064 C:\Users\mjpt1\Desktop\crm\config\settings\base.py changed, reloading.
+INFO 2026-06-04 08:28:33,886 autoreload 14300 14432 Watching for file changes with StatReloader
+INFO 2026-06-04 08:28:39,885 basehttp 14300 18344 "GET /login/ HTTP/1.1" 200 4874
+INFO 2026-06-04 08:29:14,977 basehttp 14300 18344 "POST /api/v1/auth/login/ HTTP/1.1" 200 940
+INFO 2026-06-04 08:29:15,085 basehttp 14300 18344 "GET /dashboard/ HTTP/1.1" 302 0
+INFO 2026-06-04 08:29:15,094 basehttp 14300 18344 "GET /login/?next=/dashboard/ HTTP/1.1" 200 4874
+INFO 2026-06-04 08:29:26,191 basehttp 14300 18344 "GET /login/?next=/dashboard/ HTTP/1.1" 200 4874
+INFO 2026-06-04 08:29:34,926 basehttp 14300 18572 "GET /dashboard/ HTTP/1.1" 302 0
+INFO 2026-06-04 08:29:34,936 basehttp 14300 18572 "GET /login/?next=/dashboard/ HTTP/1.1" 200 4874
+INFO 2026-06-04 08:30:12,197 basehttp 14300 18572 "POST /api/v1/auth/login/ HTTP/1.1" 200 940
+INFO 2026-06-04 08:30:12,263 basehttp 14300 18572 "GET /dashboard/ HTTP/1.1" 302 0
+INFO 2026-06-04 08:30:12,269 basehttp 14300 18572 "GET /login/?next=/dashboard/ HTTP/1.1" 200 4874
+INFO 2026-06-04 08:30:53,776 autoreload 14300 14432 C:\Users\mjpt1\Desktop\crm\apps\users\frontend_views.py changed, reloading.
+INFO 2026-06-04 08:30:55,071 autoreload 15788 18492 Watching for file changes with StatReloader
+INFO 2026-06-04 08:31:04,634 autoreload 15788 18492 C:\Users\mjpt1\Desktop\crm\apps\users\frontend_urls.py changed, reloading.
+INFO 2026-06-04 08:31:06,222 autoreload 11592 15180 Watching for file changes with StatReloader
+WARNING 2026-06-04 08:31:32,027 log 11592 9028 Unauthorized: /api/v1/auth/login/
+WARNING 2026-06-04 08:31:32,028 basehttp 11592 9028 "POST /api/v1/auth/login/ HTTP/1.1" 401 63
+INFO 2026-06-04 08:31:40,034 autoreload 11592 15180 C:\Users\mjpt1\Desktop\crm\apps\users\frontend_urls.py changed, reloading.
+INFO 2026-06-04 08:31:41,911 autoreload 18760 16020 Watching for file changes with StatReloader
+INFO 2026-06-04 08:31:44,269 basehttp 18760 7500 "GET /login/ HTTP/1.1" 200 3580
+INFO 2026-06-04 08:31:58,050 basehttp 18760 17028 "GET /login/?next=/dashboard/ HTTP/1.1" 200 3580
+INFO 2026-06-04 08:32:13,815 basehttp 18760 17028 "POST /login/ HTTP/1.1" 302 0
+INFO 2026-06-04 08:32:13,884 basehttp 18760 17028 "GET /dashboard/ HTTP/1.1" 200 15799
+INFO 2026-06-04 08:32:14,412 basehttp 18760 17028 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-04 08:32:14,413 basehttp 18760 14984 "GET /api/v1/reports/charts/?months=6 HTTP/1.1" 200 68
+INFO 2026-06-04 08:32:14,440 basehttp 18760 8984 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-04 08:33:33,191 basehttp 18760 8984 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-04 08:33:45,897 autoreload 18760 16020 C:\Users\mjpt1\Desktop\crm\config\settings\base.py changed, reloading.
+INFO 2026-06-04 08:33:47,158 autoreload 5088 5556 Watching for file changes with StatReloader
+INFO 2026-06-04 08:37:26,749 autoreload 5088 5556 C:\Users\mjpt1\Desktop\crm\apps\leads\models.py changed, reloading.
+INFO 2026-06-04 08:37:28,640 autoreload 17096 19056 Watching for file changes with StatReloader
+INFO 2026-06-04 08:37:35,455 autoreload 17096 19056 C:\Users\mjpt1\Desktop\crm\apps\users\models.py changed, reloading.
+INFO 2026-06-04 08:37:36,634 autoreload 16732 13744 Watching for file changes with StatReloader
+INFO 2026-06-04 08:37:57,342 autoreload 16732 13744 C:\Users\mjpt1\Desktop\crm\apps\sales\models.py changed, reloading.
+INFO 2026-06-04 08:38:00,008 autoreload 19392 12568 Watching for file changes with StatReloader
+INFO 2026-06-04 08:38:15,182 autoreload 19392 12568 C:\Users\mjpt1\Desktop\crm\apps\rewards\models.py changed, reloading.
+INFO 2026-06-04 08:38:17,585 autoreload 15284 17512 Watching for file changes with StatReloader
+INFO 2026-06-04 08:38:29,962 autoreload 15284 17512 C:\Users\mjpt1\Desktop\crm\apps\voip\models.py changed, reloading.
+INFO 2026-06-04 08:38:31,199 autoreload 18576 12944 Watching for file changes with StatReloader
+INFO 2026-06-04 08:38:46,991 autoreload 18576 12944 C:\Users\mjpt1\Desktop\crm\apps\users\admin.py changed, reloading.
+INFO 2026-06-04 08:38:49,294 autoreload 16668 11868 Watching for file changes with StatReloader
+INFO 2026-06-04 08:39:20,388 autoreload 16668 11868 C:\Users\mjpt1\Desktop\crm\apps\sales\apps.py changed, reloading.
+INFO 2026-06-04 08:39:22,266 autoreload 15248 10452 Watching for file changes with StatReloader
+INFO 2026-06-04 08:39:31,567 autoreload 15248 10452 C:\Users\mjpt1\Desktop\crm\apps\rewards\models.py changed, reloading.
+INFO 2026-06-04 08:39:32,771 autoreload 16956 18996 Watching for file changes with StatReloader
+INFO 2026-06-04 08:39:55,739 autoreload 17484 12972 Watching for file changes with StatReloader
+INFO 2026-06-04 08:40:38,310 basehttp 17484 18496 "GET /dashboard/ HTTP/1.1" 302 0
+ERROR 2026-06-04 08:40:38,406 log 17484 18496 Internal Server Error: /login/
+Traceback (most recent call last):
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\views\decorators\http.py", line 64, in inner
+    return func(request, *args, **kwargs)
+  File "C:\Users\mjpt1\Desktop\crm\apps\users\frontend_views.py", line 31, in login_page
+    return render(request, 'users/login.html', {'error': error})
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\backends\django.py", line 61, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 134, in render
+    compiled_parent = self.get_parent(context)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 131, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 109, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\defaulttags.py", line 961, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 228, in do_block
+    raise TemplateSyntaxError(
+        "'%s' tag with name '%s' appears more than once" % (bits[0], block_name)
+    )
+django.template.exceptions.TemplateSyntaxError: 'block' tag with name 'breadcrumb' appears more than once
+ERROR 2026-06-04 08:40:38,453 basehttp 17484 18496 "GET /login/?next=/dashboard/ HTTP/1.1" 500 223427
+INFO 2026-06-04 08:40:46,484 basehttp 17484 18496 "GET / HTTP/1.1" 302 0
+ERROR 2026-06-04 08:40:46,586 log 17484 18496 Internal Server Error: /login/
+Traceback (most recent call last):
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\views\decorators\http.py", line 64, in inner
+    return func(request, *args, **kwargs)
+  File "C:\Users\mjpt1\Desktop\crm\apps\users\frontend_views.py", line 31, in login_page
+    return render(request, 'users/login.html', {'error': error})
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\backends\django.py", line 61, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 134, in render
+    compiled_parent = self.get_parent(context)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 131, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 109, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\defaulttags.py", line 961, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 228, in do_block
+    raise TemplateSyntaxError(
+        "'%s' tag with name '%s' appears more than once" % (bits[0], block_name)
+    )
+django.template.exceptions.TemplateSyntaxError: 'block' tag with name 'breadcrumb' appears more than once
+ERROR 2026-06-04 08:40:46,617 basehttp 17484 18496 "GET /login/ HTTP/1.1" 500 222795
+INFO 2026-06-04 08:40:47,000 basehttp 17484 18496 "GET / HTTP/1.1" 302 0
+ERROR 2026-06-04 08:40:47,408 log 17484 18496 Internal Server Error: /login/
+Traceback (most recent call last):
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\views\decorators\http.py", line 64, in inner
+    return func(request, *args, **kwargs)
+  File "C:\Users\mjpt1\Desktop\crm\apps\users\frontend_views.py", line 31, in login_page
+    return render(request, 'users/login.html', {'error': error})
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\backends\django.py", line 61, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 1000, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 961, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 134, in render
+    compiled_parent = self.get_parent(context)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 131, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 109, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\defaulttags.py", line 961, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 228, in do_block
+    raise TemplateSyntaxError(
+        "'%s' tag with name '%s' appears more than once" % (bits[0], block_name)
+    )
+django.template.exceptions.TemplateSyntaxError: 'block' tag with name 'breadcrumb' appears more than once
+ERROR 2026-06-04 08:40:47,436 basehttp 17484 18496 "GET /login/ HTTP/1.1" 500 222651
+INFO 2026-06-04 08:42:45,591 autoreload 19420 4108 Watching for file changes with StatReloader
+INFO 2026-06-04 08:44:23,238 basehttp 19420 15264 "GET /login/ HTTP/1.1" 200 3824
+INFO 2026-06-04 08:46:02,365 basehttp 19420 18668 "GET /login/ HTTP/1.1" 200 3824
+INFO 2026-06-04 08:50:01,482 basehttp 19420 18668 "GET /login/ HTTP/1.1" 200 3825
+INFO 2026-06-04 08:50:06,188 basehttp 19420 18668 "POST /login/ HTTP/1.1" 302 0
+ERROR 2026-06-04 08:50:06,270 log 19420 18668 Internal Server Error: /dashboard/
+Traceback (most recent call last):
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\mjpt1\Desktop\crm\apps\users\frontend_views.py", line 41, in dashboard
+    return render(request, 'dashboard/index.html', {'user': request.user})
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 228, in do_block
+    raise TemplateSyntaxError(
+        "'%s' tag with name '%s' appears more than once" % (bits[0], block_name)
+    )
+django.template.exceptions.TemplateSyntaxError: 'block' tag with name 'title' appears more than once
+ERROR 2026-06-04 08:50:06,296 basehttp 19420 18668 "GET /dashboard/ HTTP/1.1" 500 189171
+INFO 2026-06-04 08:52:28,112 basehttp 19420 18668 "GET /dashboard/ HTTP/1.1" 200 14436
+INFO 2026-06-04 08:52:35,745 basehttp 19420 18668 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-04 08:52:35,746 basehttp 19420 17824 "GET /api/v1/reports/charts/?months=6 HTTP/1.1" 200 68
+INFO 2026-06-04 08:52:36,037 basehttp 19420 15016 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-04 08:55:09,213 autoreload 19420 4108 C:\Users\mjpt1\Desktop\crm\apps\users\frontend_views.py changed, reloading.
+INFO 2026-06-04 08:55:14,269 autoreload 18852 4756 Watching for file changes with StatReloader
+INFO 2026-06-04 08:55:25,017 autoreload 18852 4756 C:\Users\mjpt1\Desktop\crm\apps\users\frontend_views.py changed, reloading.
+INFO 2026-06-04 08:55:26,511 autoreload 17100 18144 Watching for file changes with StatReloader
+INFO 2026-06-04 08:55:51,580 autoreload 17100 18144 C:\Users\mjpt1\Desktop\crm\apps\users\frontend_urls.py changed, reloading.
+INFO 2026-06-04 08:55:52,719 autoreload 12992 18780 Watching for file changes with StatReloader
+INFO 2026-06-04 08:56:08,805 basehttp 12992 13336 "GET /dashboard/ HTTP/1.1" 302 0
+INFO 2026-06-04 08:56:09,474 basehttp 12992 13336 "GET /login/?next=/dashboard/ HTTP/1.1" 200 3825
+INFO 2026-06-04 08:56:12,441 basehttp 12992 13336 "POST /login/ HTTP/1.1" 302 0
+INFO 2026-06-04 08:56:12,470 basehttp 12992 13336 "GET /dashboard/ HTTP/1.1" 200 14509
+INFO 2026-06-04 08:56:13,013 basehttp 12992 13336 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-04 08:56:13,014 basehttp 12992 19148 "GET /api/v1/reports/charts/?months=6 HTTP/1.1" 200 68
+INFO 2026-06-04 08:56:13,062 basehttp 12992 13336 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+ERROR 2026-06-04 08:57:03,245 log 12992 13336 Internal Server Error: /leads/
+Traceback (most recent call last):
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\mjpt1\Desktop\crm\apps\users\frontend_views.py", line 51, in leads_list
+    return render(request, 'leads/list.html', {'user': request.user})
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 228, in do_block
+    raise TemplateSyntaxError(
+        "'%s' tag with name '%s' appears more than once" % (bits[0], block_name)
+    )
+django.template.exceptions.TemplateSyntaxError: 'block' tag with name 'breadcrumb' appears more than once
+ERROR 2026-06-04 08:57:03,270 basehttp 12992 13336 "GET /leads/ HTTP/1.1" 500 187448
+INFO 2026-06-04 09:19:48,049 basehttp 12992 18916 "GET /dashboard/ HTTP/1.1" 200 14509
+INFO 2026-06-04 09:19:48,233 basehttp 12992 13704 "GET /api/v1/reports/charts/?months=6 HTTP/1.1" 200 68
+INFO 2026-06-04 09:19:48,234 basehttp 12992 18916 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-04 09:19:48,263 basehttp 12992 5072 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+ERROR 2026-06-04 09:19:50,614 log 12992 5072 Internal Server Error: /leads/
+Traceback (most recent call last):
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\mjpt1\Desktop\crm\apps\users\frontend_views.py", line 51, in leads_list
+    return render(request, 'leads/list.html', {'user': request.user})
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 228, in do_block
+    raise TemplateSyntaxError(
+        "'%s' tag with name '%s' appears more than once" % (bits[0], block_name)
+    )
+django.template.exceptions.TemplateSyntaxError: 'block' tag with name 'breadcrumb' appears more than once
+ERROR 2026-06-04 09:19:50,668 basehttp 12992 5072 "GET /leads/ HTTP/1.1" 500 187448
+ERROR 2026-06-04 09:19:53,499 log 12992 5072 Internal Server Error: /invoices/
+Traceback (most recent call last):
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\mjpt1\Desktop\crm\apps\users\frontend_views.py", line 56, in invoice_list
+    return render(request, 'sales/invoice_list.html', {'user': request.user})
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 228, in do_block
+    raise TemplateSyntaxError(
+        "'%s' tag with name '%s' appears more than once" % (bits[0], block_name)
+    )
+django.template.exceptions.TemplateSyntaxError: 'block' tag with name 'breadcrumb' appears more than once
+ERROR 2026-06-04 09:19:53,512 basehttp 12992 5072 "GET /invoices/ HTTP/1.1" 500 187493
+INFO 2026-06-04 09:19:56,260 basehttp 12992 5072 "GET /calls/ HTTP/1.1" 200 7108
+INFO 2026-06-04 09:19:57,993 basehttp 12992 5072 "GET /leave/ HTTP/1.1" 200 7093
+INFO 2026-06-04 09:20:00,822 basehttp 12992 5072 "GET /rewards/ HTTP/1.1" 200 7135
+INFO 2026-06-04 09:20:02,060 basehttp 12992 5072 "GET /reports/ HTTP/1.1" 200 7114
+INFO 2026-06-04 09:20:02,835 basehttp 12992 5072 "GET /payments/ HTTP/1.1" 200 7120
+ERROR 2026-06-04 09:20:03,470 log 12992 5072 Internal Server Error: /invoices/
+Traceback (most recent call last):
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\mjpt1\Desktop\crm\apps\users\frontend_views.py", line 56, in invoice_list
+    return render(request, 'sales/invoice_list.html', {'user': request.user})
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\mjpt1\Desktop\crm\venv\Lib\site-packages\django\template\loader_tags.py", line 228, in do_block
+    raise TemplateSyntaxError(
+        "'%s' tag with name '%s' appears more than once" % (bits[0], block_name)
+    )
+django.template.exceptions.TemplateSyntaxError: 'block' tag with name 'breadcrumb' appears more than once
+ERROR 2026-06-04 09:20:03,484 basehttp 12992 5072 "GET /invoices/ HTTP/1.1" 500 187492
+INFO 2026-06-04 09:20:06,499 basehttp 12992 5072 "GET /users/ HTTP/1.1" 200 7105
+INFO 2026-06-04 09:20:07,963 basehttp 12992 5072 "GET /teams/ HTTP/1.1" 200 7102
+INFO 2026-06-04 09:20:10,245 basehttp 12992 5072 "GET /dashboard/ HTTP/1.1" 200 14509
+INFO 2026-06-04 09:20:10,377 basehttp 12992 5072 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-04 09:20:10,386 basehttp 12992 18916 "GET /api/v1/reports/charts/?months=6 HTTP/1.1" 200 68
+INFO 2026-06-04 09:20:10,418 basehttp 12992 13704 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-07 16:57:59,818 autoreload 48452 46212 Watching for file changes with StatReloader
+INFO 2026-06-07 16:59:17,738 basehttp 48452 46076 "GET / HTTP/1.1" 302 0
+INFO 2026-06-07 16:59:17,928 basehttp 48452 46076 "GET /login/ HTTP/1.1" 200 3825
+INFO 2026-06-07 16:59:18,576 basehttp 48452 49864 "GET /static/js/app.js HTTP/1.1" 200 5617
+INFO 2026-06-07 16:59:18,594 basehttp 48452 46076 "GET /static/css/custom.css HTTP/1.1" 200 2178
+INFO 2026-06-07 17:00:03,530 basehttp 48452 46076 "POST /login/ HTTP/1.1" 302 0
+INFO 2026-06-07 17:00:03,543 basehttp 48452 46076 "GET /dashboard/ HTTP/1.1" 200 14509
+INFO 2026-06-07 17:00:03,761 basehttp 48452 46076 "GET /static/js/app.js HTTP/1.1" 304 0
+WARNING 2026-06-07 17:00:04,605 log 48452 46076 Unauthorized: /api/v1/reports/dashboard/
+WARNING 2026-06-07 17:00:04,605 log 48452 49864 Unauthorized: /api/v1/reports/charts/
+WARNING 2026-06-07 17:00:04,606 basehttp 48452 49864 "GET /api/v1/reports/charts/?months=6 HTTP/1.1" 401 263
+WARNING 2026-06-07 17:00:04,606 basehttp 48452 46076 "GET /api/v1/reports/dashboard/ HTTP/1.1" 401 263
+WARNING 2026-06-07 17:00:04,627 log 48452 46076 Unauthorized: /api/v1/reports/dashboard/
+WARNING 2026-06-07 17:00:04,628 basehttp 48452 46076 "GET /api/v1/reports/dashboard/ HTTP/1.1" 401 263
+INFO 2026-06-07 17:00:31,344 basehttp 48452 45596 "GET /dashboard/ HTTP/1.1" 302 0
+INFO 2026-06-07 17:00:31,360 basehttp 48452 45596 "GET /login/?next=/dashboard/ HTTP/1.1" 200 3825
+INFO 2026-06-07 17:00:31,638 basehttp 48452 45596 "GET /static/css/custom.css HTTP/1.1" 200 2178
+INFO 2026-06-07 17:00:31,648 basehttp 48452 46540 "GET /static/js/app.js HTTP/1.1" 200 5617
+WARNING 2026-06-07 17:00:32,797 log 48452 46540 Not Found: /favicon.ico
+WARNING 2026-06-07 17:00:32,798 basehttp 48452 46540 "GET /favicon.ico HTTP/1.1" 404 5257
+INFO 2026-06-07 17:00:37,194 basehttp 48452 46540 "POST /login/ HTTP/1.1" 302 0
+INFO 2026-06-07 17:00:37,226 basehttp 48452 46540 "GET /dashboard/ HTTP/1.1" 200 14509
+WARNING 2026-06-07 17:00:37,289 log 48452 46540 Unauthorized: /api/v1/reports/dashboard/
+WARNING 2026-06-07 17:00:37,291 log 48452 45596 Unauthorized: /api/v1/reports/charts/
+WARNING 2026-06-07 17:00:37,380 basehttp 48452 45596 "GET /api/v1/reports/charts/?months=6 HTTP/1.1" 401 263
+WARNING 2026-06-07 17:00:37,381 basehttp 48452 46540 "GET /api/v1/reports/dashboard/ HTTP/1.1" 401 263
+WARNING 2026-06-07 17:00:37,400 log 48452 46540 Unauthorized: /api/v1/reports/dashboard/
+WARNING 2026-06-07 17:00:37,401 basehttp 48452 46540 "GET /api/v1/reports/dashboard/ HTTP/1.1" 401 263
+INFO 2026-06-07 17:00:42,605 basehttp 48452 46540 "GET /leads/ HTTP/1.1" 200 14797
+WARNING 2026-06-07 17:00:42,673 log 48452 46540 Unauthorized: /api/v1/leads/
+WARNING 2026-06-07 17:00:42,674 basehttp 48452 46540 "GET /api/v1/leads/?page=1&page_size=20 HTTP/1.1" 401 263
+INFO 2026-06-07 17:00:43,810 basehttp 48452 46540 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 830
+INFO 2026-06-07 17:00:44,252 basehttp 48452 46540 "GET /api/v1/leads/?page=1&page_size=20 HTTP/1.1" 200 52
+INFO 2026-06-07 17:00:46,140 basehttp 48452 46540 "GET /invoices/ HTTP/1.1" 200 13956
+INFO 2026-06-07 17:00:46,358 basehttp 48452 46540 "GET /api/v1/sales/invoices/?page=1&page_size=20 HTTP/1.1" 200 52
+INFO 2026-06-07 17:00:47,275 basehttp 48452 46540 "GET /payments/ HTTP/1.1" 200 11400
+INFO 2026-06-07 17:00:47,401 basehttp 48452 46540 "GET /api/v1/sales/invoices/?status=approved&page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:00:47,412 basehttp 48452 45596 "GET /api/v1/payments/online/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:00:48,710 basehttp 48452 45596 "GET /reports/ HTTP/1.1" 200 10243
+INFO 2026-06-07 17:00:48,829 basehttp 48452 45596 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-07 17:00:48,830 basehttp 48452 46540 "GET /api/v1/reports/charts/?months=6 HTTP/1.1" 200 68
+INFO 2026-06-07 17:01:34,017 basehttp 48452 46540 "GET /rewards/ HTTP/1.1" 200 12909
+INFO 2026-06-07 17:01:34,104 basehttp 48452 46540 "GET /static/js/app.js HTTP/1.1" 304 0
+INFO 2026-06-07 17:01:34,164 basehttp 48452 45596 "GET /api/v1/rewards/rewards/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:01:34,164 basehttp 48452 46540 "GET /api/v1/rewards/targets/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:01:39,529 basehttp 48452 46540 "GET /leave/ HTTP/1.1" 200 11262
+INFO 2026-06-07 17:01:39,765 basehttp 48452 45596 "GET /api/v1/leave/requests/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:01:39,766 basehttp 48452 46540 "GET /api/v1/leave/types/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:01:46,204 basehttp 48452 46540 "GET /calls/ HTTP/1.1" 200 9643
+INFO 2026-06-07 17:01:46,295 basehttp 48452 46540 "GET /api/v1/voip/calls/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:01:48,436 basehttp 48452 46540 "GET /users/ HTTP/1.1" 200 21760
+INFO 2026-06-07 17:01:48,513 basehttp 48452 45596 "GET /api/v1/auth/teams/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:01:48,517 basehttp 48452 46540 "GET /api/v1/auth/users/?page=1&page_size=20 HTTP/1.1" 200 259
+INFO 2026-06-07 17:01:49,832 basehttp 48452 46540 "GET /teams/ HTTP/1.1" 200 15141
+INFO 2026-06-07 17:01:49,919 basehttp 48452 46540 "GET /api/v1/auth/teams/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:01:49,924 basehttp 48452 45596 "GET /api/v1/auth/users/?role=supervisor&page_size=100 HTTP/1.1" 200 259
+INFO 2026-06-07 17:01:51,026 basehttp 48452 45596 "GET /users/ HTTP/1.1" 200 21760
+INFO 2026-06-07 17:01:51,106 basehttp 48452 45596 "GET /api/v1/auth/users/?page=1&page_size=20 HTTP/1.1" 200 259
+INFO 2026-06-07 17:01:51,106 basehttp 48452 46540 "GET /api/v1/auth/teams/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:03:27,352 autoreload 48452 46212 C:\Users\mjpt1\Desktop\crm\config\settings\base.py changed, reloading.
+INFO 2026-06-07 17:03:28,577 autoreload 50740 51644 Watching for file changes with StatReloader
+INFO 2026-06-07 17:04:19,489 autoreload 50740 51644 C:\Users\mjpt1\Desktop\crm\config\settings\base.py changed, reloading.
+INFO 2026-06-07 17:04:20,849 autoreload 51968 51408 Watching for file changes with StatReloader
+INFO 2026-06-07 17:04:25,425 basehttp 51968 52216 "GET /reports/ HTTP/1.1" 302 0
+INFO 2026-06-07 17:04:25,492 basehttp 51968 52216 "GET /login/?next=/reports/ HTTP/1.1" 200 3825
+INFO 2026-06-07 17:04:25,694 basehttp 51968 52216 "GET /static/js/app.js HTTP/1.1" 200 5805
+INFO 2026-06-07 17:04:32,975 basehttp 51968 48612 "GET /users/ HTTP/1.1" 302 0
+INFO 2026-06-07 17:04:33,010 basehttp 51968 48612 "GET /login/?next=/users/ HTTP/1.1" 200 3825
+INFO 2026-06-07 17:04:33,094 basehttp 51968 48612 "GET /static/js/app.js HTTP/1.1" 200 5805
+INFO 2026-06-07 17:04:35,863 basehttp 51968 48612 "POST /login/ HTTP/1.1" 302 0
+INFO 2026-06-07 17:04:35,884 basehttp 51968 48612 "GET /dashboard/ HTTP/1.1" 200 14509
+INFO 2026-06-07 17:04:35,982 basehttp 51968 48612 "GET /static/js/app.js HTTP/1.1" 304 0
+INFO 2026-06-07 17:04:36,267 basehttp 51968 50316 "GET /api/v1/reports/charts/?months=6 HTTP/1.1" 200 68
+INFO 2026-06-07 17:04:36,267 basehttp 51968 48612 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-07 17:04:36,295 basehttp 51968 41312 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-07 17:04:38,242 basehttp 51968 41312 "GET /reports/ HTTP/1.1" 200 20031
+INFO 2026-06-07 17:04:38,310 basehttp 51968 41312 "GET /static/js/app.js HTTP/1.1" 304 0
+INFO 2026-06-07 17:04:38,381 basehttp 51968 48612 "GET /api/v1/auth/users/?page_size=200 HTTP/1.1" 200 259
+INFO 2026-06-07 17:04:38,381 basehttp 51968 50116 "GET /api/v1/auth/teams/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:04:38,385 basehttp 51968 41312 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-07 17:04:38,389 basehttp 51968 50316 "GET /api/v1/reports/charts/?months=6 HTTP/1.1" 200 68
+INFO 2026-06-07 17:04:42,053 basehttp 51968 50316 "GET /dashboard/ HTTP/1.1" 200 14509
+INFO 2026-06-07 17:04:42,128 basehttp 51968 50316 "GET /static/js/app.js HTTP/1.1" 304 0
+INFO 2026-06-07 17:04:42,173 basehttp 51968 41312 "GET /api/v1/reports/charts/?months=6 HTTP/1.1" 200 68
+INFO 2026-06-07 17:04:42,174 basehttp 51968 50316 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-07 17:04:42,202 basehttp 51968 48612 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-07 17:04:45,207 basehttp 51968 48612 "GET /reports/ HTTP/1.1" 200 20031
+INFO 2026-06-07 17:04:45,263 basehttp 51968 48612 "GET /static/js/app.js HTTP/1.1" 304 0
+INFO 2026-06-07 17:04:45,345 basehttp 51968 50116 "GET /api/v1/auth/teams/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:04:45,345 basehttp 51968 48612 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-07 17:04:45,347 basehttp 51968 41312 "GET /api/v1/auth/users/?page_size=200 HTTP/1.1" 200 259
+INFO 2026-06-07 17:04:45,348 basehttp 51968 50316 "GET /api/v1/reports/charts/?months=6 HTTP/1.1" 200 68
+INFO 2026-06-07 17:04:52,356 basehttp 51968 50316 "GET /api/v1/reports/expert/1/ HTTP/1.1" 200 281
+INFO 2026-06-07 17:04:59,870 basehttp 51968 50316 "GET /leave/ HTTP/1.1" 200 11262
+INFO 2026-06-07 17:04:59,937 basehttp 51968 50316 "GET /static/js/app.js HTTP/1.1" 200 6133
+INFO 2026-06-07 17:05:00,001 basehttp 51968 50316 "GET /api/v1/leave/types/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:05:00,008 basehttp 51968 48612 "GET /api/v1/leave/requests/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:05:01,752 basehttp 51968 48612 "GET /dashboard/ HTTP/1.1" 200 14509
+INFO 2026-06-07 17:05:01,819 basehttp 51968 48612 "GET /static/js/app.js HTTP/1.1" 304 0
+INFO 2026-06-07 17:05:01,883 basehttp 51968 48612 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-07 17:05:01,884 basehttp 51968 50316 "GET /api/v1/reports/charts/?months=6 HTTP/1.1" 200 68
+INFO 2026-06-07 17:05:01,898 basehttp 51968 41312 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-07 17:11:03,541 basehttp 51968 41872 "GET /teams/ HTTP/1.1" 200 15141
+INFO 2026-06-07 17:11:03,650 basehttp 51968 41872 "GET /static/js/app.js HTTP/1.1" 304 0
+INFO 2026-06-07 17:11:03,759 basehttp 51968 41872 "GET /api/v1/auth/teams/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:11:03,763 basehttp 51968 52588 "GET /api/v1/auth/users/?role=supervisor&page_size=100 HTTP/1.1" 200 259
+INFO 2026-06-07 17:11:05,663 basehttp 51968 52588 "GET /users/ HTTP/1.1" 200 21760
+INFO 2026-06-07 17:11:05,815 basehttp 51968 52588 "GET /api/v1/auth/users/?page=1&page_size=20 HTTP/1.1" 200 259
+INFO 2026-06-07 17:11:05,815 basehttp 51968 41872 "GET /api/v1/auth/teams/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:11:08,664 basehttp 51968 41872 "GET /dashboard/ HTTP/1.1" 200 14509
+INFO 2026-06-07 17:11:08,749 basehttp 51968 41872 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-07 17:11:08,751 basehttp 51968 52588 "GET /api/v1/reports/charts/?months=6 HTTP/1.1" 200 68
+INFO 2026-06-07 17:11:08,767 basehttp 51968 52712 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-07 17:11:55,457 basehttp 51968 52712 "GET /dashboard/ HTTP/1.1" 200 14509
+INFO 2026-06-07 17:11:55,537 basehttp 51968 52712 "GET /static/js/app.js HTTP/1.1" 200 6133
+INFO 2026-06-07 17:11:55,600 basehttp 51968 52712 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-07 17:11:55,615 basehttp 51968 52588 "GET /api/v1/reports/charts/?months=6 HTTP/1.1" 200 68
+INFO 2026-06-07 17:11:55,644 basehttp 51968 41872 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-07 17:12:50,126 basehttp 51968 41872 "GET /leads/ HTTP/1.1" 200 14797
+INFO 2026-06-07 17:12:50,296 basehttp 51968 41872 "GET /static/js/app.js HTTP/1.1" 304 0
+INFO 2026-06-07 17:12:50,502 basehttp 51968 41872 "GET /api/v1/leads/?page=1&page_size=20 HTTP/1.1" 200 52
+INFO 2026-06-07 17:12:52,136 basehttp 51968 41872 "GET /invoices/ HTTP/1.1" 200 13956
+INFO 2026-06-07 17:12:52,260 basehttp 51968 41872 "GET /api/v1/sales/invoices/?page=1&page_size=20 HTTP/1.1" 200 52
+INFO 2026-06-07 17:12:55,863 basehttp 51968 41872 "GET /leads/ HTTP/1.1" 200 14797
+INFO 2026-06-07 17:12:55,941 basehttp 51968 41872 "GET /api/v1/leads/?page=1&page_size=20 HTTP/1.1" 200 52
+INFO 2026-06-07 17:12:57,642 basehttp 51968 41872 "GET /invoices/ HTTP/1.1" 200 13956
+INFO 2026-06-07 17:12:57,753 basehttp 51968 41872 "GET /api/v1/sales/invoices/?page=1&page_size=20 HTTP/1.1" 200 52
+INFO 2026-06-07 17:13:17,003 basehttp 51968 41872 "GET /payments/ HTTP/1.1" 200 11400
+INFO 2026-06-07 17:13:17,083 basehttp 51968 41872 "GET /static/js/app.js HTTP/1.1" 304 0
+INFO 2026-06-07 17:13:17,125 basehttp 51968 52588 "GET /api/v1/payments/online/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:13:17,125 basehttp 51968 41872 "GET /api/v1/sales/invoices/?status=approved&page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:13:22,500 basehttp 51968 41872 "GET /reports/ HTTP/1.1" 200 20031
+INFO 2026-06-07 17:13:22,672 basehttp 51968 41872 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-07 17:13:22,673 basehttp 51968 52712 "GET /api/v1/auth/users/?page_size=200 HTTP/1.1" 200 259
+INFO 2026-06-07 17:13:22,673 basehttp 51968 53656 "GET /api/v1/auth/teams/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:13:22,677 basehttp 51968 52588 "GET /api/v1/reports/charts/?months=6 HTTP/1.1" 200 68
+INFO 2026-06-07 17:13:31,284 basehttp 51968 52588 "GET /rewards/ HTTP/1.1" 200 12909
+INFO 2026-06-07 17:13:31,348 basehttp 51968 52588 "GET /static/js/app.js HTTP/1.1" 304 0
+INFO 2026-06-07 17:13:31,394 basehttp 51968 52588 "GET /api/v1/rewards/targets/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:13:31,400 basehttp 51968 52712 "GET /api/v1/rewards/rewards/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:13:54,319 basehttp 51968 52712 "GET /leave/ HTTP/1.1" 200 11262
+INFO 2026-06-07 17:13:54,405 basehttp 51968 52712 "GET /static/js/app.js HTTP/1.1" 304 0
+INFO 2026-06-07 17:13:54,454 basehttp 51968 52712 "GET /api/v1/leave/types/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:13:54,454 basehttp 51968 52588 "GET /api/v1/leave/requests/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:14:14,249 basehttp 51968 52588 "GET /calls/ HTTP/1.1" 200 9643
+INFO 2026-06-07 17:14:14,330 basehttp 51968 52588 "GET /static/js/app.js HTTP/1.1" 304 0
+INFO 2026-06-07 17:14:14,379 basehttp 51968 52588 "GET /api/v1/voip/calls/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:14:16,099 basehttp 51968 52588 "GET /users/ HTTP/1.1" 200 21760
+INFO 2026-06-07 17:14:16,202 basehttp 51968 52712 "GET /api/v1/auth/teams/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:14:16,203 basehttp 51968 52588 "GET /api/v1/auth/users/?page=1&page_size=20 HTTP/1.1" 200 259
+INFO 2026-06-07 17:14:17,752 basehttp 51968 52588 "GET /teams/ HTTP/1.1" 200 15141
+INFO 2026-06-07 17:14:17,846 basehttp 51968 52588 "GET /api/v1/auth/teams/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:14:17,855 basehttp 51968 52712 "GET /api/v1/auth/users/?role=supervisor&page_size=100 HTTP/1.1" 200 259
+INFO 2026-06-07 17:14:25,119 basehttp 51968 52712 "GET /users/ HTTP/1.1" 200 21760
+INFO 2026-06-07 17:14:25,251 basehttp 51968 52712 "GET /api/v1/auth/users/?page=1&page_size=20 HTTP/1.1" 200 259
+INFO 2026-06-07 17:14:25,258 basehttp 51968 52588 "GET /api/v1/auth/teams/?page_size=100 HTTP/1.1" 200 52
+WARNING 2026-06-07 17:20:44,890 log 55484 51304 Bad Request: /api/v1/auth/users/
+INFO 2026-06-07 17:22:39,131 basehttp 51968 57052 "GET /users/ HTTP/1.1" 200 22201
+INFO 2026-06-07 17:22:39,307 basehttp 51968 57052 "GET /static/js/app.js HTTP/1.1" 200 7105
+INFO 2026-06-07 17:22:39,794 basehttp 51968 50012 "GET /api/v1/auth/teams/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:22:39,800 basehttp 51968 57052 "GET /api/v1/auth/users/?page=1&page_size=20 HTTP/1.1" 200 699
+INFO 2026-06-07 17:24:50,590 basehttp 51968 46556 "GET /users/ HTTP/1.1" 302 0
+INFO 2026-06-07 17:24:50,669 basehttp 51968 46556 "GET /login/?next=/users/ HTTP/1.1" 200 3947
+INFO 2026-06-07 17:24:50,808 basehttp 51968 46556 "GET /static/css/custom.css HTTP/1.1" 200 2178
+INFO 2026-06-07 17:24:50,820 basehttp 51968 57424 "GET /static/js/app.js HTTP/1.1" 200 7105
+WARNING 2026-06-07 17:24:51,789 log 51968 57424 Not Found: /favicon.ico
+WARNING 2026-06-07 17:24:51,789 basehttp 51968 57424 "GET /favicon.ico HTTP/1.1" 404 5257
+INFO 2026-06-07 17:25:15,429 basehttp 51968 57424 "POST /login/ HTTP/1.1" 302 0
+INFO 2026-06-07 17:25:15,446 basehttp 51968 57424 "GET /dashboard/ HTTP/1.1" 200 14010
+INFO 2026-06-07 17:25:15,475 basehttp 51968 57424 "GET /static/js/app.js HTTP/1.1" 304 0
+INFO 2026-06-07 17:25:15,906 basehttp 51968 46556 "GET /api/v1/reports/charts/?months=6 HTTP/1.1" 200 68
+INFO 2026-06-07 17:25:15,906 basehttp 51968 57424 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-07 17:25:15,947 basehttp 51968 54028 "GET /api/v1/reports/dashboard/ HTTP/1.1" 200 160
+INFO 2026-06-07 17:25:23,546 basehttp 51968 54028 "GET /users/ HTTP/1.1" 200 22201
+INFO 2026-06-07 17:25:24,035 basehttp 51968 57424 "GET /api/v1/auth/teams/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:25:24,037 basehttp 51968 54028 "GET /api/v1/auth/users/?page=1&page_size=20 HTTP/1.1" 200 699
+INFO 2026-06-07 17:25:53,474 basehttp 51968 54028 "GET /users/ HTTP/1.1" 200 22202
+INFO 2026-06-07 17:25:53,576 basehttp 51968 54028 "GET /static/js/app.js HTTP/1.1" 304 0
+INFO 2026-06-07 17:25:53,704 basehttp 51968 57424 "GET /api/v1/auth/teams/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:25:53,704 basehttp 51968 54028 "GET /api/v1/auth/users/?page=1&page_size=20 HTTP/1.1" 200 699
+INFO 2026-06-07 17:26:41,164 basehttp 51968 57424 "POST /api/v1/auth/users/ HTTP/1.1" 201 126
+INFO 2026-06-07 17:26:41,212 basehttp 51968 57424 "GET /api/v1/auth/users/?page=1&page_size=20 HTTP/1.1" 200 915
+INFO 2026-06-07 17:27:44,074 basehttp 51968 57424 "GET /teams/ HTTP/1.1" 200 15264
+INFO 2026-06-07 17:27:44,111 basehttp 51968 57424 "GET /static/js/app.js HTTP/1.1" 304 0
+INFO 2026-06-07 17:27:44,744 basehttp 51968 57424 "GET /api/v1/auth/teams/?page_size=100 HTTP/1.1" 200 52
+INFO 2026-06-07 17:27:44,752 basehttp 51968 54028 "GET /api/v1/auth/users/?role=supervisor&page_size=100 HTTP/1.1" 200 915
+INFO 2026-06-07 17:28:07,585 basehttp 51968 54028 "POST /api/v1/auth/teams/ HTTP/1.1" 201 85
+INFO 2026-06-07 17:28:07,622 basehttp 51968 54028 "GET /api/v1/auth/teams/?page_size=100 HTTP/1.1" 200 192
