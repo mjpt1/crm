@@ -102,6 +102,27 @@ docker-compose exec web python manage.py collectstatic --no-input
 
 ---
 
+## دیپلوی روی Vercel
+
+این پروژه با فایل `vercel.json` برای اجرای Django WSGI روی Vercel آماده شده است.
+
+متغیرهای محیطی پیشنهادی در Vercel:
+
+```env
+DJANGO_SETTINGS_MODULE=config.settings.production
+SECRET_KEY=your-strong-secret-key
+ALLOWED_HOSTS=.vercel.app,crm-jet-chi.vercel.app
+CSRF_TRUSTED_ORIGINS=https://crm-jet-chi.vercel.app,https://*.vercel.app
+```
+
+نکات مهم:
+
+- اگر PostgreSQL روی Vercel/سرویس خارجی ست نشده باشد، پروژه برای جلوگیری از کرش اولیه با SQLite موقت در `/tmp/db.sqlite3` بالا می‌آید.
+- برای محیط واقعی production حتما دیتابیس خارجی (PostgreSQL) را تنظیم کنید.
+- برای مشاهده خطای دقیق، از بخش Logs در داشبورد Vercel استفاده کنید.
+
+---
+
 ## مستندات API
 
 | آدرس | توضیح |

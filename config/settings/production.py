@@ -1,4 +1,7 @@
 """Production settings with hardened security."""
+import os
+from pathlib import Path
+
 from .base import *  # noqa
 
 DEBUG = False
@@ -19,9 +22,56 @@ SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# ─── Logging ──────────────────────────────────────────────────────────────────
-import os  # noqa
+# ─── Host / CSRF (Production + Vercel) ───────────────────────────────────────
+ALLOWED_HOSTS = list(dict.fromkeys(ALLOWED_HOSTS + ['.vercel.app']))
+_csrf_origins = [
+	origin.strip() for origin in config('CSRF_TRUSTED_ORIGINS', cast=Csv(), default='')
+	if origin and origin.strip()
+]
+CSRF_TRUSTED_ORIGINS = list(dict.fromkeys(_csrf_origins + ['https://*.vercel.app']))
 
-LOG_DIR = BASE_DIR / 'logs'  # noqa
-os.makedirs(LOG_DIR, exist_ok=True)
+# ─── Vercel Serverless Compatibility ─────────────────────────────────────────
+IS_VERCEL = bool(os.getenv('VERCEL'))
+
+if IS_VERCEL:
+	# Vercel serverless has read-only code filesystem, so file handlers fail.
+	LOGGING['handlers'].pop('file', None)
+	LOGGING['root']['handlers'] = ['console']
+	for logger_name in ('django', 'apps'):
+		LOGGING['loggers'][logger_name]['handlers'] = ['console']
+
+	# Avoid hard dependency on Redis in serverless runtime.
+	CACHES = {
+		'default': {
+			'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+		}
+	}
+	SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+
+	# If no external DB config is present, use ephemeral SQLite to prevent boot crashes.
+	has_external_db_config = any([
+		os.getenv('DATABASE_URL'),
+		os.getenv('DB_HOST'),
+		os.getenv('POSTGRES_HOST'),
+	])
+	if not has_external_db_config:
+		DATABASES = {
+			'default': {
+				'ENGINE': 'django.db.backends.sqlite3',
+				'NAME': Path('/tmp/db.sqlite3'),
+			}
+		}
+
+	# On Vercel, collectstatic may not generate a manifest in every workflow.
+	STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+
+	# Fallback for preview deployments when SECRET_KEY was not set yet.
+	if not os.getenv('SECRET_KEY'):
+		SECRET_KEY = 'unsafe-vercel-preview-secret-key-change-me'
+
+# ─── Logging ──────────────────────────────────────────────────────────────────
+if not IS_VERCEL:
+	LOG_DIR = BASE_DIR / 'logs'  # noqa
+	os.makedirs(LOG_DIR, exist_ok=True)
+
 LOGGING['root']['level'] = 'WARNING'  # noqa
