@@ -4,6 +4,7 @@ Payment views — Zibal payment initiation, callback, and verification.
 import logging
 
 from django.conf import settings
+from django.db.utils import OperationalError, ProgrammingError
 from django.shortcuts import get_object_or_404, redirect, render
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
@@ -107,15 +108,35 @@ def payment_settings(request):
     if not (user.can_manage_all or user.is_supervisor or user.is_finance):
         return Response({'detail': 'Insufficient permissions.'}, status=status.HTTP_403_FORBIDDEN)
 
-    cfg, _ = PaymentGatewayConfig.objects.get_or_create(
-        gateway='zibal',
-        defaults={
+    try:
+        cfg, _ = PaymentGatewayConfig.objects.get_or_create(
+            gateway='zibal',
+            defaults={
+                'merchant': getattr(settings, 'ZIBAL_MERCHANT', ''),
+                'callback_url': getattr(settings, 'ZIBAL_CALLBACK_URL', ''),
+                'is_active': True,
+                'updated_by': user,
+            },
+        )
+    except (OperationalError, ProgrammingError):
+        # Fallback before migrations: allow read-only config view from settings.
+        if request.method == 'PUT':
+            return Response(
+                {'detail': 'Payment settings table is not ready yet. Run migrations and try again.'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        return Response({
+            'gateway': 'zibal',
             'merchant': getattr(settings, 'ZIBAL_MERCHANT', ''),
+            'merchant_masked': '****' if getattr(settings, 'ZIBAL_MERCHANT', '') else '',
+            'merchant_configured': bool(getattr(settings, 'ZIBAL_MERCHANT', '')),
             'callback_url': getattr(settings, 'ZIBAL_CALLBACK_URL', ''),
+            'request_url': settings.ZIBAL_REQUEST_URL,
+            'verify_url': settings.ZIBAL_VERIFY_URL,
+            'payment_url_pattern': settings.ZIBAL_PAYMENT_URL,
             'is_active': True,
-            'updated_by': user,
-        },
-    )
+            'updated_at': None,
+        })
 
     if request.method == 'GET':
         return Response(PaymentSettingsSerializer(cfg).data)
