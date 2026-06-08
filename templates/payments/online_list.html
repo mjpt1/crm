@@ -134,11 +134,18 @@ async function loadPayments() {
     tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">رکوردی یافت نشد.</td></tr>';
     return;
   }
+  const statusClassMap = {
+    pending: 'warning',
+    success: 'success',
+    failed: 'danger',
+    cancelled: 'secondary',
+    verified: 'success',
+  };
   tbody.innerHTML = items.map(p => `
     <tr>
       <td>${p.invoice_number || '—'}</td>
       <td>${CRM.formatCurrency(p.amount || 0)}</td>
-      <td>${CRM.statusBadge(p.status)}</td>
+      <td><span class="badge bg-${statusClassMap[p.status] || 'secondary'}">${p.status_label || p.status || '—'}</span></td>
       <td>${p.track_id || '—'}</td>
       <td>${p.initiated_by_name || '—'}</td>
       <td>${CRM.formatDate(p.created_at)}</td>

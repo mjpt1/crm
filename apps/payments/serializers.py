@@ -8,13 +8,14 @@ from apps.payments.models import OnlinePayment, PaymentGatewayConfig
 class OnlinePaymentSerializer(serializers.ModelSerializer):
     invoice_number = serializers.CharField(source='invoice.number', read_only=True)
     initiated_by_name = serializers.CharField(source='initiated_by.get_full_name', read_only=True)
+    status_label = serializers.CharField(source='get_status_display', read_only=True)
 
     class Meta:
         model = OnlinePayment
         fields = [
             'id', 'invoice', 'invoice_number', 'amount', 'gateway',
             'track_id', 'payment_url', 'ref_number', 'card_number',
-            'status', 'initiated_by', 'initiated_by_name',
+            'status', 'status_label', 'initiated_by', 'initiated_by_name',
             'created_at', 'verified_at', 'error_message',
         ]
         read_only_fields = [
