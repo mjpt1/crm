@@ -19,17 +19,26 @@ def _ensure_demo_admin_for_serverless():
         return
     User = get_user_model()
     try:
-        if not User.objects.filter(email=email).exists():
-            User.objects.create_user(
-                email=email,
-                password=password,
-                first_name='System',
-                last_name='Admin',
-                role=Role.SUPER_ADMIN,
-                is_staff=True,
-                is_superuser=True,
-                is_active=True,
-            )
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                'first_name': 'System',
+                'last_name': 'Admin',
+                'role': Role.SUPER_ADMIN,
+                'is_staff': True,
+                'is_superuser': True,
+                'is_active': True,
+            }
+        )
+        # Keep demo credentials deterministic across cold starts.
+        user.first_name = user.first_name or 'System'
+        user.last_name = user.last_name or 'Admin'
+        user.role = Role.SUPER_ADMIN
+        user.is_staff = True
+        user.is_superuser = True
+        user.is_active = True
+        user.set_password(password)
+        user.save(update_fields=['first_name', 'last_name', 'role', 'is_staff', 'is_superuser', 'is_active', 'password'])
     except (OperationalError, ProgrammingError):
         return
 
