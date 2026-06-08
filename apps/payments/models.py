@@ -68,3 +68,36 @@ class OnlinePayment(models.Model):
     def amount_in_rials(self):
         """Zibal expects Rials. Stored value assumed to be Tomans."""
         return int(self.amount * 10)
+
+
+class PaymentGatewayConfig(models.Model):
+    """Stores editable payment gateway settings from the admin UI."""
+    gateway = models.CharField(
+        max_length=20,
+        choices=PaymentGateway.choices,
+        default=PaymentGateway.ZIBAL,
+        unique=True,
+    )
+    merchant = models.CharField(max_length=200, blank=True)
+    callback_url = models.URLField(blank=True)
+    is_active = models.BooleanField(default=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='updated_gateway_configs',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'payment_gateway_configs'
+        ordering = ['gateway']
+
+    def __str__(self):
+        return f'{self.gateway} config'
+
+    @classmethod
+    def get_zibal_config(cls):
+        return cls.objects.filter(gateway=PaymentGateway.ZIBAL).first()

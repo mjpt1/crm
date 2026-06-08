@@ -50,6 +50,11 @@
   <div class="card-body">
     <div id="settingsError" class="alert alert-danger d-none"></div>
     <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Merchant / API Token زیبال</label>
+              <input type="password" class="form-control" id="s-merchant-input" placeholder="توکن زیبال را وارد کنید">
+              <div class="form-text">این مقدار برای درخواست و Verify درگاه استفاده می‌شود.</div>
+            </div>
       <div class="col-md-6">
         <label class="form-label">Request URL</label>
         <input type="text" class="form-control" id="s-request" readonly>
@@ -64,9 +69,17 @@
       </div>
       <div class="col-md-6">
         <label class="form-label">Callback URL</label>
-        <input type="text" class="form-control" id="s-callback" readonly>
+              <input type="text" class="form-control" id="s-callback">
       </div>
     </div>
+          <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-success btn-sm" onclick="savePaymentSettings()">
+              <i class="bi bi-save me-1"></i> ذخیره تنظیمات
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="toggleMerchantVisibility()">
+              <i class="bi bi-eye me-1"></i> نمایش/مخفی توکن
+            </button>
+          </div>
     <div class="small text-muted mt-3">
       برای تغییر مقادیر واقعی، متغیرهای محیطی را در سرور (مثلا Vercel) بروزرسانی کنید.
     </div>
@@ -94,14 +107,51 @@ async function loadPaymentSettings() {
 
   const d = await res.json();
   document.getElementById('s-gateway').textContent = (d.gateway || '—').toUpperCase();
-  document.getElementById('s-merchant').textContent = d.merchant || '—';
+  document.getElementById('s-merchant').textContent = d.merchant_masked || '—';
   document.getElementById('s-configured').innerHTML = d.merchant_configured
     ? '<span class="text-success">تنظیم شده</span>'
     : '<span class="text-danger">تنظیم نشده</span>';
+  document.getElementById('s-merchant-input').value = d.merchant || '';
   document.getElementById('s-request').value = d.request_url || '';
   document.getElementById('s-verify').value = d.verify_url || '';
   document.getElementById('s-payment-pattern').value = d.payment_url_pattern || '';
   document.getElementById('s-callback').value = d.callback_url || '';
+}
+
+function toggleMerchantVisibility() {
+  const input = document.getElementById('s-merchant-input');
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+async function savePaymentSettings() {
+  const err = document.getElementById('settingsError');
+  err.classList.add('d-none');
+
+  const payload = {
+    gateway: 'zibal',
+    merchant: document.getElementById('s-merchant-input').value.trim(),
+    callback_url: document.getElementById('s-callback').value.trim(),
+    is_active: true,
+  };
+
+  const res = await CRM.apiFetch('/payments/settings/', {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+
+  if (!res || !res.ok) {
+    let msg = 'خطا در ذخیره تنظیمات.';
+    try {
+      const data = await res.json();
+      msg = data.detail || Object.values(data).flat().join(' | ') || msg;
+    } catch (e) {}
+    err.textContent = msg;
+    err.classList.remove('d-none');
+    return;
+  }
+
+  CRM.showToast('تنظیمات پرداخت با موفقیت ذخیره شد.', 'success');
+  await loadPaymentSettings();
 }
 
 document.addEventListener('DOMContentLoaded', loadPaymentSettings);

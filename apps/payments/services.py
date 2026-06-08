@@ -10,7 +10,7 @@ from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
-from apps.payments.models import OnlinePayment, PaymentStatus
+from apps.payments.models import OnlinePayment, PaymentGatewayConfig, PaymentStatus
 from apps.sales.models import InvoiceStatus
 from apps.sales.services import InvoiceService
 
@@ -46,6 +46,20 @@ class ZibalService:
     REQUEST_TIMEOUT = 15  # seconds
 
     @classmethod
+    def _get_runtime_merchant(cls):
+        cfg = PaymentGatewayConfig.get_zibal_config()
+        if cfg and cfg.is_active and (cfg.merchant or '').strip():
+            return cfg.merchant.strip()
+        return settings.ZIBAL_MERCHANT
+
+    @classmethod
+    def _get_runtime_callback_url(cls):
+        cfg = PaymentGatewayConfig.get_zibal_config()
+        if cfg and cfg.is_active and (cfg.callback_url or '').strip():
+            return cfg.callback_url.strip()
+        return settings.ZIBAL_CALLBACK_URL
+
+    @classmethod
     def _post(cls, url, payload):
         try:
             response = requests.post(
@@ -75,9 +89,9 @@ class ZibalService:
             raise ZibalException('Minimum payment amount is 100 Tomans.')
 
         payload = {
-            'merchant': settings.ZIBAL_MERCHANT,
+            'merchant': cls._get_runtime_merchant(),
             'amount': amount_rials,
-            'callbackUrl': settings.ZIBAL_CALLBACK_URL,
+            'callbackUrl': cls._get_runtime_callback_url(),
             'description': f'Payment for invoice {invoice.number}',
             'orderId': str(invoice.id),
         }
@@ -126,7 +140,7 @@ class ZibalService:
             return payment
 
         payload = {
-            'merchant': settings.ZIBAL_MERCHANT,
+            'merchant': cls._get_runtime_merchant(),
             'trackId': int(track_id),
         }
 

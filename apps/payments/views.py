@@ -9,8 +9,12 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 
-from apps.payments.models import OnlinePayment
-from apps.payments.serializers import InitiatePaymentSerializer, OnlinePaymentSerializer
+from apps.payments.models import OnlinePayment, PaymentGatewayConfig
+from apps.payments.serializers import (
+    InitiatePaymentSerializer,
+    OnlinePaymentSerializer,
+    PaymentSettingsSerializer,
+)
 from apps.payments.services import ZibalException, ZibalService
 from apps.sales.models import Invoice
 
@@ -84,7 +88,7 @@ def zibal_callback(request):
         return redirect(f'/payment-failed/?reason={str(e)}&trackId={track_id}')
 
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT'])
 @permission_classes([permissions.IsAuthenticated])
 def payment_settings(request):
     """Expose non-sensitive payment gateway settings for system settings UI."""
@@ -92,16 +96,20 @@ def payment_settings(request):
     if not (user.can_manage_all or user.is_supervisor or user.is_finance):
         return Response({'detail': 'Insufficient permissions.'}, status=status.HTTP_403_FORBIDDEN)
 
-    merchant = (settings.ZIBAL_MERCHANT or '').strip()
-    masked_merchant = merchant[:4] + '***' if merchant and merchant.lower() != 'zibal' else merchant
+    cfg, _ = PaymentGatewayConfig.objects.get_or_create(
+        gateway='zibal',
+        defaults={
+            'merchant': getattr(settings, 'ZIBAL_MERCHANT', ''),
+            'callback_url': getattr(settings, 'ZIBAL_CALLBACK_URL', ''),
+            'is_active': True,
+            'updated_by': user,
+        },
+    )
 
-    data = {
-        'gateway': 'zibal',
-        'merchant_configured': bool(merchant),
-        'merchant': masked_merchant,
-        'request_url': settings.ZIBAL_REQUEST_URL,
-        'verify_url': settings.ZIBAL_VERIFY_URL,
-        'payment_url_pattern': settings.ZIBAL_PAYMENT_URL,
-        'callback_url': settings.ZIBAL_CALLBACK_URL,
-    }
-    return Response(data)
+    if request.method == 'GET':
+        return Response(PaymentSettingsSerializer(cfg).data)
+
+    serializer = PaymentSettingsSerializer(cfg, data=request.data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    obj = serializer.save(updated_by=user)
+    return Response(PaymentSettingsSerializer(obj).data)

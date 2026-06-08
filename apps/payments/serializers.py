@@ -1,6 +1,8 @@
 from rest_framework import serializers
 
-from apps.payments.models import OnlinePayment
+from django.conf import settings
+
+from apps.payments.models import OnlinePayment, PaymentGatewayConfig
 
 
 class OnlinePaymentSerializer(serializers.ModelSerializer):
@@ -36,4 +38,61 @@ class InitiatePaymentSerializer(serializers.Serializer):
             )
         if invoice.remaining_amount <= 0:
             raise serializers.ValidationError('Invoice is already fully paid.')
+        return value
+
+
+class PaymentSettingsSerializer(serializers.ModelSerializer):
+    gateway = serializers.CharField(default='zibal')
+    merchant_masked = serializers.SerializerMethodField(read_only=True)
+    merchant_configured = serializers.SerializerMethodField(read_only=True)
+    request_url = serializers.SerializerMethodField(read_only=True)
+    verify_url = serializers.SerializerMethodField(read_only=True)
+    payment_url_pattern = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = PaymentGatewayConfig
+        fields = [
+            'gateway',
+            'merchant',
+            'merchant_masked',
+            'merchant_configured',
+            'callback_url',
+            'request_url',
+            'verify_url',
+            'payment_url_pattern',
+            'is_active',
+            'updated_at',
+        ]
+        read_only_fields = [
+            'merchant_masked',
+            'merchant_configured',
+            'request_url',
+            'verify_url',
+            'payment_url_pattern',
+            'updated_at',
+        ]
+
+    def get_merchant_masked(self, obj):
+        merchant = (obj.merchant or '').strip()
+        if not merchant:
+            return ''
+        if len(merchant) <= 4:
+            return '****'
+        return f'{merchant[:4]}***'
+
+    def get_merchant_configured(self, obj):
+        return bool((obj.merchant or '').strip())
+
+    def get_request_url(self, obj):
+        return settings.ZIBAL_REQUEST_URL
+
+    def get_verify_url(self, obj):
+        return settings.ZIBAL_VERIFY_URL
+
+    def get_payment_url_pattern(self, obj):
+        return settings.ZIBAL_PAYMENT_URL
+
+    def validate_gateway(self, value):
+        if value != 'zibal':
+            raise serializers.ValidationError('Only zibal gateway is supported right now.')
         return value
