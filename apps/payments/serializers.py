@@ -36,7 +36,11 @@ class InitiatePaymentSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 'Only approved or partially paid invoices can be paid online.'
             )
-        if invoice.remaining_amount <= 0:
+        try:
+            remaining = invoice.remaining_amount
+        except Exception:
+            raise serializers.ValidationError('Could not evaluate invoice payment balance.')
+        if remaining <= 0:
             raise serializers.ValidationError('Invoice is already fully paid.')
         return value
 

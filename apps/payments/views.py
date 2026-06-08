@@ -42,15 +42,16 @@ class OnlinePaymentViewSet(viewsets.ReadOnlyModelViewSet):
         Initiates a Zibal payment for an approved invoice.
         Returns the payment URL to redirect the customer to.
         """
-        serializer = InitiatePaymentSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        invoice = get_object_or_404(Invoice, id=serializer.validated_data['invoice_id'])
         try:
+            serializer = InitiatePaymentSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            invoice = get_object_or_404(Invoice, id=serializer.validated_data['invoice_id'])
             payment = ZibalService.initiate_payment(invoice=invoice, initiated_by=request.user)
         except ZibalException as e:
             return Response({'detail': str(e)}, status=status.HTTP_502_BAD_GATEWAY)
         except Exception:
-            logger.exception('Unexpected error while initiating online payment for invoice_id=%s', invoice.id)
+            invoice_id = request.data.get('invoice_id')
+            logger.exception('Unexpected error while initiating online payment for invoice_id=%s', invoice_id)
             return Response(
                 {'detail': 'Payment initiation failed. Please try again.'},
                 status=status.HTTP_502_BAD_GATEWAY,
