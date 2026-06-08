@@ -59,7 +59,11 @@ def login_page(request):
     if request.method == 'POST':
         email = request.POST.get('email', '').strip()
         password = request.POST.get('password', '')
-        user = authenticate(request, username=email, password=password)
+        try:
+            user = authenticate(request, username=email, password=password)
+        except (OperationalError, ProgrammingError):
+            user = None
+            error = 'سیستم در حال آماده‌سازی دیتابیس است. چند ثانیه بعد دوباره تلاش کنید.'
         if user is not None:
             login(request, user)
             next_url = request.GET.get('next', '/dashboard/')

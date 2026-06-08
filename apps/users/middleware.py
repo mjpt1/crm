@@ -7,12 +7,15 @@ from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
+from django.db import connection
 from django.db.utils import OperationalError, ProgrammingError
 
 from apps.users.models import Role
 
 logger = logging.getLogger(__name__)
 _sqlite_bootstrapped = False
+_postgres_schema_checked = False
 
 
 class TeamIsolationMiddleware:
@@ -84,9 +87,40 @@ class TeamIsolationMiddleware:
             logger.exception('Demo admin provisioning skipped due to DB readiness issue')
             return
 
+    @staticmethod
+    def _ensure_postgres_schema_if_needed():
+        global _postgres_schema_checked
+        if _postgres_schema_checked:
+            return
+
+        try:
+            if not bool(getattr(settings, 'IS_VERCEL', False)):
+                _postgres_schema_checked = True
+                return
+
+            db = settings.DATABASES.get('default', {})
+            if db.get('ENGINE') != 'django.db.backends.postgresql':
+                _postgres_schema_checked = True
+                return
+
+            # If auth tables are missing on a fresh external DB, run migrations once.
+            table_names = set(connection.introspection.table_names())
+            if 'users' in table_names and 'django_migrations' in table_names:
+                _postgres_schema_checked = True
+                return
+
+            call_command('migrate', interactive=False, verbosity=0)
+            _postgres_schema_checked = True
+        except Exception:
+            logger.exception('Postgres schema bootstrap failed')
+            # Avoid repeated heavy attempts in a single serverless instance.
+            _postgres_schema_checked = True
+            return
+
     def __call__(self, request):
         try:
             self._bootstrap_sqlite_if_needed()
+            self._ensure_postgres_schema_if_needed()
             self._ensure_demo_admin_exists()
         except Exception:
             logger.exception('Middleware initialization failed')
