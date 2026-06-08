@@ -2,6 +2,7 @@
 import os
 import shutil
 import sqlite3
+from urllib.parse import parse_qs, urlparse, unquote
 from pathlib import Path
 
 from .base import *  # noqa
@@ -55,9 +56,9 @@ if IS_VERCEL:
 	}
 	SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
-	# On Vercel only treat DATABASE_URL as authoritative for external DB.
-	# This avoids accidental Postgres selection from legacy DB_HOST variables.
-	has_external_db_config = bool(os.getenv('DATABASE_URL'))
+	# Prefer explicit DB URL from generic or Vercel Postgres env vars.
+	database_url = os.getenv('DATABASE_URL') or os.getenv('POSTGRES_URL')
+	has_external_db_config = bool(database_url)
 	if not has_external_db_config:
 		target_db = Path('/tmp/db.sqlite3')
 		seed_db = BASE_DIR / 'db.sqlite3'
@@ -85,6 +86,29 @@ if IS_VERCEL:
 				'NAME': target_db,
 			}
 		}
+	else:
+		parsed = urlparse(database_url)
+		query = parse_qs(parsed.query)
+		if parsed.scheme in ('postgres', 'postgresql'):
+			DATABASES = {
+				'default': {
+					'ENGINE': 'django.db.backends.postgresql',
+					'NAME': unquote(parsed.path.lstrip('/')),
+					'USER': unquote(parsed.username or ''),
+					'PASSWORD': unquote(parsed.password or ''),
+					'HOST': parsed.hostname or '',
+					'PORT': str(parsed.port or '5432'),
+					'OPTIONS': {
+						'connect_timeout': 10,
+					},
+					'CONN_MAX_AGE': 60,
+				}
+			}
+			sslmode = (query.get('sslmode') or [''])[0]
+			if sslmode:
+				DATABASES['default']['OPTIONS']['sslmode'] = sslmode
+		else:
+			raise ValueError('Unsupported DATABASE_URL scheme for production.')
 
 	# On Vercel, collectstatic may not generate a manifest in every workflow.
 	STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
