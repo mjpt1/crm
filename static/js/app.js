@@ -154,6 +154,7 @@ const CRM = (() => {
       rejected: ['رد شده', 'danger'],
       // وضعیت پرداخت آنلاین
       initiated: ['شروع شده', 'info'],
+      verified: ['تایید شده', 'success'],
       success: ['موفق', 'success'],
       failed: ['ناموفق', 'danger'],
       // وضعیت تماس

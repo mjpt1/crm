@@ -16,6 +16,7 @@ from apps.payments.serializers import (
     PaymentSettingsSerializer,
 )
 from apps.payments.services import ZibalException, ZibalService
+from apps.payments.models import PaymentStatus
 from apps.sales.models import Invoice
 
 logger = logging.getLogger(__name__)
@@ -66,6 +67,16 @@ class OnlinePaymentViewSet(viewsets.ReadOnlyModelViewSet):
             payment = ZibalService.verify_payment(str(track_id))
         except ZibalException as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        if payment.status not in (PaymentStatus.VERIFIED, PaymentStatus.SUCCESS):
+            return Response(
+                {
+                    'detail': payment.error_message or 'Payment is not successful.',
+                    'payment_status': payment.status,
+                    'track_id': payment.track_id,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         return Response(OnlinePaymentSerializer(payment).data)
 
 
