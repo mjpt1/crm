@@ -53,12 +53,9 @@ if IS_VERCEL:
 	}
 	SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
-	# If no external DB config is present, use ephemeral SQLite to prevent boot crashes.
-	has_external_db_config = any([
-		os.getenv('DATABASE_URL'),
-		os.getenv('DB_HOST'),
-		os.getenv('POSTGRES_HOST'),
-	])
+	# On Vercel only treat DATABASE_URL as authoritative for external DB.
+	# This avoids accidental Postgres selection from legacy DB_HOST variables.
+	has_external_db_config = bool(os.getenv('DATABASE_URL'))
 	if not has_external_db_config:
 		DATABASES = {
 			'default': {
