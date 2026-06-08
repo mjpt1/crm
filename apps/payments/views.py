@@ -68,6 +68,12 @@ class OnlinePaymentViewSet(viewsets.ReadOnlyModelViewSet):
             payment = ZibalService.verify_payment(str(track_id))
         except ZibalException as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            logger.exception('Unexpected error while verifying payment track_id=%s', track_id)
+            return Response(
+                {'detail': 'Payment verification failed. Please try again.'},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
 
         if payment.status not in (PaymentStatus.VERIFIED, PaymentStatus.SUCCESS):
             return Response(
