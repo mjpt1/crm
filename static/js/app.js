@@ -103,13 +103,25 @@ const CRM = (() => {
   function formatDate(isoString) {
     if (!isoString) return '—';
     try {
-      return new Date(isoString).toLocaleDateString('fa-IR-u-ca-persian', {
+      const d = new Date(isoString);
+      if (Number.isNaN(d.getTime())) return '—';
+
+      const jLib = window.jalaali || (typeof jalaali !== 'undefined' ? jalaali : null);
+      if (jLib) {
+        const j = jLib.toJalaali(d.getFullYear(), d.getMonth() + 1, d.getDate());
+        const months = [
+          'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+          'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند',
+        ];
+        const toFa = (n) => String(n).replace(/\d/g, (x) => '۰۱۲۳۴۵۶۷۸۹'[Number(x)]);
+        return `${toFa(String(j.jd).padStart(2, '0'))} ${months[j.jm - 1]} ${toFa(j.jy)}`;
+      }
+
+      return d.toLocaleDateString('fa-IR-u-ca-persian', {
         day: '2-digit', month: 'long', year: 'numeric',
       });
     } catch (e) {
-      return new Date(isoString).toLocaleDateString('fa-IR', {
-        day: '2-digit', month: 'long', year: 'numeric',
-      });
+      return '—';
     }
   }
 

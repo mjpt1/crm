@@ -423,7 +423,6 @@ class LiveSalesBoardService:
             .filter(
                 created_at__date__gte=date_from,
                 created_at__date__lte=date_to,
-                created_by__role=Role.SALES_EXPERT,
             )
             .select_related('created_by', 'created_by__team__supervisor')
             .prefetch_related('items')
@@ -447,7 +446,6 @@ class LiveSalesBoardService:
                 is_confirmed=True,
                 payment_date__gte=date_from,
                 payment_date__lte=date_to,
-                invoice__created_by__role=Role.SALES_EXPERT,
             )
             .select_related('invoice__created_by', 'invoice__created_by__team__supervisor')
         )
@@ -470,7 +468,6 @@ class LiveSalesBoardService:
                 status__in=(PaymentStatus.VERIFIED, PaymentStatus.SUCCESS),
                 verified_at__date__gte=date_from,
                 verified_at__date__lte=date_to,
-                invoice__created_by__role=Role.SALES_EXPERT,
             )
             .select_related('invoice__created_by', 'invoice__created_by__team__supervisor')
         )
