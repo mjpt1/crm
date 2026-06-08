@@ -108,7 +108,11 @@ class ZibalService:
             logger.error('Zibal initiate failed for invoice %s: %s', invoice.number, msg)
             raise ZibalException(msg)
 
-        track_id = str(data['trackId'])
+        track_id_raw = data.get('trackId') or data.get('track_id')
+        if not track_id_raw:
+            logger.error('Zibal initiate missing track id for invoice %s. payload=%s response=%s', invoice.number, payload, data)
+            raise ZibalException('Gateway did not return a valid tracking id.')
+        track_id = str(track_id_raw)
         payment_url = settings.ZIBAL_PAYMENT_URL.format(track_id=track_id)
 
         payment = OnlinePayment.objects.create(

@@ -49,11 +49,11 @@ class OnlinePaymentViewSet(viewsets.ReadOnlyModelViewSet):
             payment = ZibalService.initiate_payment(invoice=invoice, initiated_by=request.user)
         except ZibalException as e:
             return Response({'detail': str(e)}, status=status.HTTP_502_BAD_GATEWAY)
-        except Exception:
+        except Exception as exc:
             invoice_id = request.data.get('invoice_id')
             logger.exception('Unexpected error while initiating online payment for invoice_id=%s', invoice_id)
             return Response(
-                {'detail': 'Payment initiation failed. Please try again.'},
+                {'detail': f'Payment initiation failed: {str(exc) or "unknown error"}'},
                 status=status.HTTP_502_BAD_GATEWAY,
             )
         return Response({
