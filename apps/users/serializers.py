@@ -50,22 +50,36 @@ class TeamDetailSerializer(serializers.ModelSerializer):
 
 
 class TeamWriteSerializer(serializers.ModelSerializer):
-    supervisor = serializers.IntegerField(required=False, allow_null=True)
+    supervisor = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.filter(
+            role__in=('supervisor', 'super_admin', 'sales_manager'),
+            is_active=True,
+        ),
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = Team
         fields = ['name', 'supervisor', 'description', 'is_active']
 
+    def to_internal_value(self, data):
+        mutable = dict(data)
+        supervisor_raw = mutable.get('supervisor', None)
+        if supervisor_raw in ('', None):
+            mutable['supervisor'] = None
+        else:
+            exists = CustomUser.objects.filter(
+                id=supervisor_raw,
+                is_active=True,
+                role__in=('supervisor', 'super_admin', 'sales_manager'),
+            ).exists()
+            if not exists:
+                mutable['supervisor'] = None
+        return super().to_internal_value(mutable)
+
     def validate_supervisor(self, value):
-        if value in (None, ''):
-            return None
-        supervisor = CustomUser.objects.filter(
-            id=value,
-            is_active=True,
-            role__in=('supervisor', 'super_admin', 'sales_manager'),
-        ).first()
-        # Gracefully ignore stale/invalid supervisor IDs from cached UIs.
-        return supervisor
+        return value
 
 
 # ─── User Serializers ─────────────────────────────────────────────────────────
