@@ -29,19 +29,11 @@
 <div class="card border-0 shadow-sm mb-4">
   <div class="card-body">
     <div class="row g-2 align-items-end">
-      <div class="col-md-3">
-        <label class="form-label mb-1">از تاریخ (شمسی)</label>
-        <input id="liveStart" class="form-control form-control-sm" dir="ltr" placeholder="۱۴۰۵/۰۳/۰۱" />
-      </div>
-      <div class="col-md-3">
-        <label class="form-label mb-1">تا تاریخ (شمسی)</label>
-        <input id="liveEnd" class="form-control form-control-sm" dir="ltr" placeholder="۱۴۰۵/۰۳/۳۱" />
-      </div>
       <div class="col-md-2">
         <button class="btn btn-primary btn-sm w-100" onclick="loadAllLiveBoards()">بروزرسانی</button>
       </div>
-      <div class="col-md-4 text-muted small">
-        گزارش بر اساس بازه انتخابی شما محاسبه می‌شود.
+      <div class="col-md-10 text-muted small">
+        برای هر بخش بازه تاریخ مستقل تعریف کنید. در صورت نیاز، هر بخش را جداگانه بروزرسانی کنید.
       </div>
     </div>
   </div>
@@ -49,6 +41,25 @@
 
 <div class="board-wrap p-3 mb-4">
   <h5 class="fw-bold mb-3">1) گزارش زنده فروش کارشناسان (صدور + وصول)</h5>
+  <div class="row g-2 align-items-end mb-3">
+    <div class="col-md-3">
+      <label class="form-label mb-1">از تاریخ (شمسی)</label>
+      <div class="input-group input-group-sm" dir="ltr">
+        <input id="expertsStart" class="form-control" placeholder="۱۴۰۵/۰۳/۰۱" />
+        <button class="btn btn-outline-secondary" type="button" onclick="openDatePicker('expertsStart')"><i class="bi bi-calendar3"></i></button>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label mb-1">تا تاریخ (شمسی)</label>
+      <div class="input-group input-group-sm" dir="ltr">
+        <input id="expertsEnd" class="form-control" placeholder="۱۴۰۵/۰۳/۳۱" />
+        <button class="btn btn-outline-secondary" type="button" onclick="openDatePicker('expertsEnd')"><i class="bi bi-calendar3"></i></button>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <button class="btn btn-outline-primary btn-sm w-100" onclick="loadExpertsBoard()">اعمال بازه</button>
+    </div>
+  </div>
   <div id="expertsTop" class="row g-2 mb-3"></div>
   <div class="mb-2 text-center fw-semibold" id="expertsTotal"></div>
   <div style="height:360px"><canvas id="expertsChart"></canvas></div>
@@ -56,6 +67,25 @@
 
 <div class="board-wrap p-3 mb-4">
   <h5 class="fw-bold mb-3">2) گزارش زنده سوپروایزرها (بر اساس عملکرد کارشناسان زیرمجموعه)</h5>
+  <div class="row g-2 align-items-end mb-3">
+    <div class="col-md-3">
+      <label class="form-label mb-1">از تاریخ (شمسی)</label>
+      <div class="input-group input-group-sm" dir="ltr">
+        <input id="supervisorsStart" class="form-control" placeholder="۱۴۰۵/۰۳/۰۱" />
+        <button class="btn btn-outline-secondary" type="button" onclick="openDatePicker('supervisorsStart')"><i class="bi bi-calendar3"></i></button>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label mb-1">تا تاریخ (شمسی)</label>
+      <div class="input-group input-group-sm" dir="ltr">
+        <input id="supervisorsEnd" class="form-control" placeholder="۱۴۰۵/۰۳/۳۱" />
+        <button class="btn btn-outline-secondary" type="button" onclick="openDatePicker('supervisorsEnd')"><i class="bi bi-calendar3"></i></button>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <button class="btn btn-outline-primary btn-sm w-100" onclick="loadSupervisorsBoard()">اعمال بازه</button>
+    </div>
+  </div>
   <div id="supervisorsTop" class="row g-2 mb-3"></div>
   <div class="mb-2 text-center fw-semibold" id="supervisorsTotal"></div>
   <div style="height:360px"><canvas id="supervisorsChart"></canvas></div>
@@ -63,6 +93,25 @@
 
 <div class="board-wrap p-3">
   <h5 class="fw-bold mb-3">3) گزارش زنده سرپرست‌ها (تجمیع یک لایه بالاتر)</h5>
+  <div class="row g-2 align-items-end mb-3">
+    <div class="col-md-3">
+      <label class="form-label mb-1">از تاریخ (شمسی)</label>
+      <div class="input-group input-group-sm" dir="ltr">
+        <input id="managersStart" class="form-control" placeholder="۱۴۰۵/۰۳/۰۱" />
+        <button class="btn btn-outline-secondary" type="button" onclick="openDatePicker('managersStart')"><i class="bi bi-calendar3"></i></button>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label mb-1">تا تاریخ (شمسی)</label>
+      <div class="input-group input-group-sm" dir="ltr">
+        <input id="managersEnd" class="form-control" placeholder="۱۴۰۵/۰۳/۳۱" />
+        <button class="btn btn-outline-secondary" type="button" onclick="openDatePicker('managersEnd')"><i class="bi bi-calendar3"></i></button>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <button class="btn btn-outline-primary btn-sm w-100" onclick="loadManagersBoard()">اعمال بازه</button>
+    </div>
+  </div>
   <div id="managersTop" class="row g-2 mb-3"></div>
   <div class="mb-2 text-center fw-semibold" id="managersTotal"></div>
   <div style="height:360px"><canvas id="managersChart"></canvas></div>
@@ -96,18 +145,56 @@ function getDefaultJalaliRange() {
   };
 }
 
+function getDefaultGregorianRange() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  return {
+    start: `${y}-${pad2(m + 1)}-01`,
+    end: `${y}-${pad2(m + 1)}-${pad2(new Date(y, m + 1, 0).getDate())}`,
+  };
+}
+
 function initJalaliPickers() {
-  if (!window.jQuery || !jQuery().persianDatepicker) return;
-  jQuery('#liveStart').persianDatepicker({
-    format: 'YYYY/MM/DD',
-    autoClose: true,
-    initialValue: false,
+  const ids = [
+    'expertsStart', 'expertsEnd',
+    'supervisorsStart', 'supervisorsEnd',
+    'managersStart', 'managersEnd',
+  ];
+  const hasJalaliPicker = Boolean(window.jQuery && jQuery.fn && jQuery.fn.persianDatepicker);
+  ids.forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (hasJalaliPicker) {
+      jQuery(`#${id}`).persianDatepicker({
+        format: 'YYYY/MM/DD',
+        autoClose: true,
+        initialValue: false,
+        observer: true,
+      });
+      el.dataset.calendarMode = 'jalali';
+    } else {
+      el.type = 'date';
+      el.placeholder = '';
+      el.dataset.calendarMode = 'gregorian';
+    }
   });
-  jQuery('#liveEnd').persianDatepicker({
-    format: 'YYYY/MM/DD',
-    autoClose: true,
-    initialValue: false,
-  });
+}
+
+function openDatePicker(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (el.dataset.calendarMode === 'jalali' && window.jQuery && jQuery.fn && jQuery.fn.persianDatepicker) {
+    try {
+      jQuery(`#${id}`).persianDatepicker('show');
+      return;
+    } catch (e) {}
+  }
+  if (typeof el.showPicker === 'function') {
+    el.showPicker();
+    return;
+  }
+  el.focus();
 }
 
 function toAmount(v) {
@@ -183,16 +270,29 @@ function buildChart(canvasId, chartRefName, labels, issuedData, collectedData) {
   });
 }
 
-async function loadBoard(endpoint, topId, totalId, chartCanvasId, chartRefName) {
-  const startRaw = document.getElementById('liveStart').value.trim();
-  const endRaw = document.getElementById('liveEnd').value.trim();
-  const dateFrom = CRM.toISO(startRaw);
-  const dateTo = CRM.toISO(endRaw);
-  if (!dateFrom || !dateTo) {
-    CRM.showToast('بازه تاریخ را به فرمت شمسی صحیح وارد کنید (مثل ۱۴۰۵/۰۳/۰۱).', 'warning');
-    return;
+function getDateRangeByPrefix(prefix) {
+  const startEl = document.getElementById(`${prefix}Start`);
+  const endEl = document.getElementById(`${prefix}End`);
+  const startRaw = (startEl.value || '').trim();
+  const endRaw = (endEl.value || '').trim();
+  const dateFrom = startEl.dataset.calendarMode === 'gregorian' ? startRaw : CRM.toISO(startRaw);
+  const dateTo = endEl.dataset.calendarMode === 'gregorian' ? endRaw : CRM.toISO(endRaw);
+  return { startRaw, endRaw, dateFrom, dateTo };
+}
+
+function validateRange(prefix, title) {
+  const r = getDateRangeByPrefix(prefix);
+  if (!r.dateFrom || !r.dateTo) {
+    CRM.showToast(`بازه تاریخ ${title} را با تقویم انتخاب کنید یا به فرمت صحیح شمسی وارد کنید.`, 'warning');
+    return null;
   }
-  const qs = `?date_from=${encodeURIComponent(dateFrom)}&date_to=${encodeURIComponent(dateTo)}`;
+  return r;
+}
+
+async function loadBoard(endpoint, prefix, title, topId, totalId, chartCanvasId, chartRefName) {
+  const range = validateRange(prefix, title);
+  if (!range) return;
+  const qs = `?date_from=${encodeURIComponent(range.dateFrom)}&date_to=${encodeURIComponent(range.dateTo)}`;
   const res = await CRM.apiFetch(`${endpoint}${qs}`);
   if (!res || !res.ok) {
     CRM.showToast('خطا در بارگذاری گزارش زنده', 'danger');
@@ -217,17 +317,43 @@ async function loadBoard(endpoint, topId, totalId, chartCanvasId, chartRefName) 
 
 async function loadAllLiveBoards() {
   await Promise.all([
-    loadBoard('/reports/live/experts/', 'expertsTop', 'expertsTotal', 'expertsChart', 'expertsChart'),
-    loadBoard('/reports/live/supervisors/', 'supervisorsTop', 'supervisorsTotal', 'supervisorsChart', 'supervisorsChart'),
-    loadBoard('/reports/live/managers/', 'managersTop', 'managersTotal', 'managersChart', 'managersChart'),
+    loadExpertsBoard(),
+    loadSupervisorsBoard(),
+    loadManagersBoard(),
   ]);
+}
+
+function loadExpertsBoard() {
+  return loadBoard('/reports/live/experts/', 'experts', 'کارشناسان', 'expertsTop', 'expertsTotal', 'expertsChart', 'expertsChart');
+}
+
+function loadSupervisorsBoard() {
+  return loadBoard('/reports/live/supervisors/', 'supervisors', 'سوپروایزرها', 'supervisorsTop', 'supervisorsTotal', 'supervisorsChart', 'supervisorsChart');
+}
+
+function loadManagersBoard() {
+  return loadBoard('/reports/live/managers/', 'managers', 'سرپرست‌ها', 'managersTop', 'managersTotal', 'managersChart', 'managersChart');
+}
+
+function setDefaultsForPrefix(prefix, defaults) {
+  const startEl = document.getElementById(`${prefix}Start`);
+  const endEl = document.getElementById(`${prefix}End`);
+  if (startEl?.dataset.calendarMode === 'gregorian' || endEl?.dataset.calendarMode === 'gregorian') {
+    const gd = getDefaultGregorianRange();
+    startEl.value = gd.start;
+    endEl.value = gd.end;
+    return;
+  }
+  startEl.value = defaults.start;
+  endEl.value = defaults.end;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   initJalaliPickers();
   const defaults = getDefaultJalaliRange();
-  document.getElementById('liveStart').value = defaults.start;
-  document.getElementById('liveEnd').value = defaults.end;
+  setDefaultsForPrefix('experts', defaults);
+  setDefaultsForPrefix('supervisors', defaults);
+  setDefaultsForPrefix('managers', defaults);
   loadAllLiveBoards();
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = setInterval(loadAllLiveBoards, 15000);
