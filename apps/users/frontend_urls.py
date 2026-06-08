@@ -17,4 +17,5 @@ urlpatterns = [
     path('calls/', frontend_views.calls_page, name='calls_page'),
     path('users/', frontend_views.users_page, name='users_page'),
     path('teams/', frontend_views.teams_page, name='teams_page'),
+    path('settings/', frontend_views.settings_page, name='settings_page'),
 ]

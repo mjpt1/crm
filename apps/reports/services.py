@@ -61,16 +61,16 @@ class ExpertPerformanceService:
             time_diff_seconds = int((last_invoice - first_invoice).total_seconds())
 
         # Revenue metrics
-        revenue_data = paid_invoices.aggregate(
-            total_revenue=Sum('items__unit_price') or 0,
-        )
+        total_revenue = sum(invoice.total_amount for invoice in paid_invoices.prefetch_related('items'))
 
         # Conversion rate: paid / total leads assigned in period
-        leads_count = Lead.objects.filter(
+        leads_qs = Lead.objects.filter(
             assigned_to_id=expert_id,
             assigned_at__date__gte=date_from,
             assigned_at__date__lte=date_to,
-        ).count()
+        )
+        leads_count = leads_qs.count()
+        leads_won = leads_qs.filter(status=LeadStatus.WON).count()
 
         conversion_rate = round((paid_count / leads_count * 100), 2) if leads_count > 0 else 0.0
 
@@ -81,12 +81,23 @@ class ExpertPerformanceService:
             'expert_id': expert_id,
             'date_from': str(date_from),
             'date_to': str(date_to),
+            'leads': {
+                'total': leads_count,
+                'won': leads_won,
+            },
+            'invoices': {
+                'total': total_invoices,
+                'paid': paid_count,
+                'total_revenue': float(total_revenue),
+            },
             'total_invoices': total_invoices,
             'paid_invoices': paid_count,
             'first_invoice_at': first_invoice.isoformat() if first_invoice else None,
             'last_invoice_at': last_invoice.isoformat() if last_invoice else None,
             'time_diff_seconds': time_diff_seconds,
             'leads_assigned': leads_count,
+            'leads_won': leads_won,
+            'total_revenue': float(total_revenue),
             'conversion_rate': conversion_rate,
             'collection_rate': collection_rate,
         }
@@ -150,13 +161,35 @@ class TeamPerformanceService:
     @staticmethod
     def get_team_summary(team_id, date_from, date_to):
         experts = CustomUser.objects.filter(team_id=team_id, is_active=True)
-        summary = []
+        experts_data = []
+        total_leads = 0
+        total_won = 0
+        total_invoices = 0
+        total_revenue = 0.0
         for expert in experts:
             data = ExpertPerformanceService.get_performance(expert.id, date_from, date_to)
             data['expert_name'] = expert.get_full_name()
             data['expert_email'] = expert.email
-            summary.append(data)
-        return summary
+            experts_data.append(data)
+            total_leads += data.get('leads', {}).get('total', 0)
+            total_won += data.get('leads', {}).get('won', 0)
+            total_invoices += data.get('invoices', {}).get('total', 0)
+            total_revenue += data.get('invoices', {}).get('total_revenue', 0) or 0
+
+        return {
+            'team_id': team_id,
+            'date_from': str(date_from),
+            'date_to': str(date_to),
+            'leads': {
+                'total': total_leads,
+                'won': total_won,
+            },
+            'invoices': {
+                'total': total_invoices,
+                'total_revenue': float(total_revenue),
+            },
+            'experts': experts_data,
+        }
 
 
 class DashboardService:
@@ -174,8 +207,17 @@ class DashboardService:
         today = timezone.now().date()
         month_start = today.replace(day=1)
 
-        leads_qs = Lead.objects.filter(assigned_to_id__in=accessible_ids)
-        invoices_qs = Invoice.objects.filter(created_by_id__in=accessible_ids)
+        if user.can_manage_all:
+            leads_qs = Lead.objects.all()
+            invoices_qs = Invoice.objects.all()
+        elif user.is_supervisor and user.team_id:
+            leads_qs = Lead.objects.filter(
+                Q(assigned_to__team_id=user.team_id) | Q(created_by__team_id=user.team_id) | Q(assigned_to__isnull=True)
+            ).distinct()
+            invoices_qs = Invoice.objects.filter(created_by__team_id=user.team_id)
+        else:
+            leads_qs = Lead.objects.filter(assigned_to_id__in=accessible_ids)
+            invoices_qs = Invoice.objects.filter(created_by_id__in=accessible_ids)
 
         lead_stats = leads_qs.aggregate(
             total=Count('id'),
@@ -209,11 +251,20 @@ class DashboardService:
         accessible_ids = list(user.get_accessible_user_ids())
         start_date = timezone.now().date() - timedelta(days=months * 30)
 
+        if user.can_manage_all:
+            invoice_base_qs = Invoice.objects.all()
+            lead_base_qs = Lead.objects.all()
+        elif user.is_supervisor and user.team_id:
+            invoice_base_qs = Invoice.objects.filter(created_by__team_id=user.team_id)
+            lead_base_qs = Lead.objects.filter(
+                Q(assigned_to__team_id=user.team_id) | Q(created_by__team_id=user.team_id) | Q(assigned_to__isnull=True)
+            ).distinct()
+        else:
+            invoice_base_qs = Invoice.objects.filter(created_by_id__in=accessible_ids)
+            lead_base_qs = Lead.objects.filter(assigned_to_id__in=accessible_ids)
+
         invoice_monthly = (
-            Invoice.objects.filter(
-                created_by_id__in=accessible_ids,
-                created_at__date__gte=start_date,
-            )
+            invoice_base_qs.filter(created_at__date__gte=start_date)
             .annotate(month=TruncMonth('created_at'))
             .values('month')
             .annotate(
@@ -224,25 +275,35 @@ class DashboardService:
         )
 
         lead_monthly = (
-            Lead.objects.filter(
-                assigned_to_id__in=accessible_ids,
-                created_at__date__gte=start_date,
-            )
+            lead_base_qs.filter(created_at__date__gte=start_date)
             .annotate(month=TruncMonth('created_at'))
             .values('month')
             .annotate(total=Count('id'))
             .order_by('month')
         )
 
-        labels = [r['month'].strftime('%b %Y') for r in invoice_monthly]
+        invoice_map = {r['month'].strftime('%Y-%m'): r for r in invoice_monthly}
+        lead_map = {r['month'].strftime('%Y-%m'): r for r in lead_monthly}
+        all_month_keys = sorted(set(invoice_map.keys()) | set(lead_map.keys()))
+
+        labels = []
+        invoice_total = []
+        invoice_paid = []
+        lead_total = []
+        for month_key in all_month_keys:
+            year, month = month_key.split('-')
+            labels.append(f'{year}/{month}')
+            invoice_total.append(invoice_map.get(month_key, {}).get('total', 0))
+            invoice_paid.append(invoice_map.get(month_key, {}).get('paid', 0))
+            lead_total.append(lead_map.get(month_key, {}).get('total', 0))
 
         return {
             'labels': labels,
             'invoices': {
-                'total': [r['total'] for r in invoice_monthly],
-                'paid': [r['paid'] for r in invoice_monthly],
+                'total': invoice_total,
+                'paid': invoice_paid,
             },
             'leads': {
-                'total': [r['total'] for r in lead_monthly],
+                'total': lead_total,
             },
         }

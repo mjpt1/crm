@@ -132,3 +132,8 @@ def users_page(request):
 @login_required
 def teams_page(request):
     return render(request, 'users/teams_list.html', {'user': request.user})
+
+
+@login_required
+def settings_page(request):
+    return render(request, 'settings/index.html', {'user': request.user})

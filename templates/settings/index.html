@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}تنظیمات سیستم — CRM{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard' %}">داشبورد</a></li>
+<li class="breadcrumb-item active">تنظیمات</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h4 class="fw-bold mb-0">تنظیمات سیستم</h4>
+  <button class="btn btn-primary btn-sm" onclick="loadPaymentSettings()">
+    <i class="bi bi-arrow-clockwise me-1"></i> بروزرسانی
+  </button>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small mb-1">درگاه فعال</div>
+        <div class="fw-bold fs-5" id="s-gateway">—</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small mb-1">Merchant</div>
+        <div class="fw-bold fs-5" id="s-merchant">—</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small mb-1">وضعیت تنظیم Merchant</div>
+        <div class="fw-bold fs-5" id="s-configured">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-header bg-white border-0 pt-3 px-4">
+    <h6 class="fw-bold mb-0">تنظیمات زیبال</h6>
+  </div>
+  <div class="card-body">
+    <div id="settingsError" class="alert alert-danger d-none"></div>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Request URL</label>
+        <input type="text" class="form-control" id="s-request" readonly>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Verify URL</label>
+        <input type="text" class="form-control" id="s-verify" readonly>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Payment URL Pattern</label>
+        <input type="text" class="form-control" id="s-payment-pattern" readonly>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Callback URL</label>
+        <input type="text" class="form-control" id="s-callback" readonly>
+      </div>
+    </div>
+    <div class="small text-muted mt-3">
+      برای تغییر مقادیر واقعی، متغیرهای محیطی را در سرور (مثلا Vercel) بروزرسانی کنید.
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function loadPaymentSettings() {
+  const err = document.getElementById('settingsError');
+  err.classList.add('d-none');
+
+  const res = await CRM.apiFetch('/payments/settings/');
+  if (!res || !res.ok) {
+    let msg = 'خطا در دریافت تنظیمات.';
+    try {
+      const data = await res.json();
+      msg = data.detail || msg;
+    } catch (e) {}
+    err.textContent = msg;
+    err.classList.remove('d-none');
+    return;
+  }
+
+  const d = await res.json();
+  document.getElementById('s-gateway').textContent = (d.gateway || '—').toUpperCase();
+  document.getElementById('s-merchant').textContent = d.merchant || '—';
+  document.getElementById('s-configured').innerHTML = d.merchant_configured
+    ? '<span class="text-success">تنظیم شده</span>'
+    : '<span class="text-danger">تنظیم نشده</span>';
+  document.getElementById('s-request').value = d.request_url || '';
+  document.getElementById('s-verify').value = d.verify_url || '';
+  document.getElementById('s-payment-pattern').value = d.payment_url_pattern || '';
+  document.getElementById('s-callback').value = d.callback_url || '';
+}
+
+document.addEventListener('DOMContentLoaded', loadPaymentSettings);
+</script>
+{% endblock %}

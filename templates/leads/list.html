@@ -166,6 +166,9 @@
 <script>
 let currentPage = 1;
 const PAGE_SIZE = 20;
+const CAN_ASSIGN_LEADS = {% if user.role == 'super_admin' or user.role == 'sales_manager' or user.role == 'supervisor' %}true{% else %}false{% endif %};
+let selectedLeadIdForAssign = null;
+let assignExpertsLoaded = false;
 
 const STATUS_LABELS = {
   new: 'جدید', contacted: 'تماس‌گرفته‌شده', qualified: 'واجد شرایط',
@@ -228,6 +231,9 @@ function renderLeads(data) {
       <td>${lead.assigned_to_name || '<span class="text-muted">تخصیص‌نیافته</span>'}</td>
       <td>${CRM.formatDate(lead.created_at)}</td>
       <td>
+        ${CAN_ASSIGN_LEADS ? `<button type="button" class="btn btn-sm btn-outline-success py-0 px-2 me-1" onclick="openAssignLeadModal(${lead.id}, '${(lead.first_name || '').replace(/'/g, "\\'")} ${(lead.last_name || '').replace(/'/g, "\\'")}')">
+          <i class="bi bi-person-plus"></i>
+        </button>` : ''}
         <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" onclick="openLeadDetail(${lead.id})">
           <i class="bi bi-eye"></i>
         </button>
@@ -344,6 +350,56 @@ async function openLeadDetail(id) {
   new bootstrap.Modal(document.getElementById('leadDetailModal')).show();
 }
 
+async function openAssignLeadModal(leadId, leadName) {
+  selectedLeadIdForAssign = leadId;
+  document.getElementById('assignLeadTarget').textContent = leadName || `#${leadId}`;
+  document.getElementById('assignLeadError').classList.add('d-none');
+  if (!assignExpertsLoaded) {
+    const res = await CRM.apiFetch('/auth/users/?page_size=200');
+    if (res && res.ok) {
+      const data = await res.json();
+      const users = (data.results || data).filter(u => u.role === 'sales_expert' && u.is_active);
+      const sel = document.getElementById('assignExpertSelect');
+      sel.innerHTML = '<option value="">انتخاب کارشناس…</option>' +
+        users.map(u => `<option value="${u.id}">${u.first_name} ${u.last_name}</option>`).join('');
+      assignExpertsLoaded = true;
+    }
+  }
+  new bootstrap.Modal(document.getElementById('assignLeadModal')).show();
+}
+
+async function submitLeadAssign() {
+  const expertId = document.getElementById('assignExpertSelect').value;
+  const errorEl = document.getElementById('assignLeadError');
+  errorEl.classList.add('d-none');
+
+  if (!selectedLeadIdForAssign || !expertId) {
+    errorEl.textContent = 'لطفا کارشناس را انتخاب کنید.';
+    errorEl.classList.remove('d-none');
+    return;
+  }
+
+  const res = await CRM.apiFetch(`/leads/${selectedLeadIdForAssign}/assign/`, {
+    method: 'POST',
+    body: JSON.stringify({ expert_id: Number(expertId) }),
+  });
+
+  if (res && res.ok) {
+    bootstrap.Modal.getInstance(document.getElementById('assignLeadModal')).hide();
+    CRM.showToast('سرنخ با موفقیت تخصیص داده شد.', 'success');
+    loadLeads();
+    return;
+  }
+
+  let err = 'خطا در تخصیص سرنخ.';
+  try {
+    const d = await res.json();
+    err = d.detail || Object.values(d).flat().join(' | ') || err;
+  } catch (e) {}
+  errorEl.textContent = err;
+  errorEl.classList.remove('d-none');
+}
+
 document.addEventListener('DOMContentLoaded', loadLeads);
 document.getElementById('searchInput').addEventListener('keyup', (e) => {
   if (e.key === 'Enter') loadLeads();
@@ -360,6 +416,29 @@ document.getElementById('searchInput').addEventListener('keyup', (e) => {
       <div class="modal-body" id="leadDetailBody"></div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="assignLeadModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">تخصیص سرنخ</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2 small text-muted">سرنخ: <span id="assignLeadTarget">—</span></div>
+        <div id="assignLeadError" class="alert alert-danger d-none"></div>
+        <label class="form-label">کارشناس فروش</label>
+        <select class="form-select" id="assignExpertSelect">
+          <option value="">انتخاب کارشناس…</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+        <button type="button" class="btn btn-success" onclick="submitLeadAssign()">ثبت تخصیص</button>
       </div>
     </div>
   </div>

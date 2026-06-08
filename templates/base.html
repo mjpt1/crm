@@ -82,6 +82,14 @@
         </a>
       </li>
 
+      {% if user.is_superuser or user.role == 'super_admin' or user.role == 'sales_manager' or user.role == 'supervisor' or user.role == 'finance' %}
+      <li class="nav-item">
+        <a href="{% url 'settings_page' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'settings_page' %}active{% endif %}">
+          <i class="bi bi-gear me-2"></i> تنظیمات
+        </a>
+      </li>
+      {% endif %}
+
       {% if user.is_superuser or user.role == 'super_admin' or user.role == 'sales_manager' %}
       <hr class="border-secondary" />
       <li class="nav-item">

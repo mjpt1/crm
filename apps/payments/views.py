@@ -3,6 +3,7 @@ Payment views — Zibal payment initiation, callback, and verification.
 """
 import logging
 
+from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect, render
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
@@ -81,3 +82,26 @@ def zibal_callback(request):
         logger.warning('Zibal callback failed: %s | data: %s', e, data)
         track_id = data.get('trackId', '')
         return redirect(f'/payment-failed/?reason={str(e)}&trackId={track_id}')
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def payment_settings(request):
+    """Expose non-sensitive payment gateway settings for system settings UI."""
+    user = request.user
+    if not (user.can_manage_all or user.is_supervisor or user.is_finance):
+        return Response({'detail': 'Insufficient permissions.'}, status=status.HTTP_403_FORBIDDEN)
+
+    merchant = (settings.ZIBAL_MERCHANT or '').strip()
+    masked_merchant = merchant[:4] + '***' if merchant and merchant.lower() != 'zibal' else merchant
+
+    data = {
+        'gateway': 'zibal',
+        'merchant_configured': bool(merchant),
+        'merchant': masked_merchant,
+        'request_url': settings.ZIBAL_REQUEST_URL,
+        'verify_url': settings.ZIBAL_VERIFY_URL,
+        'payment_url_pattern': settings.ZIBAL_PAYMENT_URL,
+        'callback_url': settings.ZIBAL_CALLBACK_URL,
+    }
+    return Response(data)
