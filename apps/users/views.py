@@ -163,6 +163,27 @@ class TeamViewSet(viewsets.ModelViewSet):
             request=self.request,
         )
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        team = serializer.save()
+        AuditService.log(
+            user=request.user,
+            action=AuditLog.ACTION_CREATE,
+            model_name='Team',
+            object_id=str(team.id),
+            request=request,
+        )
+        return Response(TeamDetailSerializer(team).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        team = serializer.save()
+        return Response(TeamDetailSerializer(team).data)
+
 
 # ─── Audit Log ViewSet (read-only) ────────────────────────────────────────────
 class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
