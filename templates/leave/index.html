@@ -48,24 +48,49 @@
 
 {% block extra_js %}
 <script>
+function parseApiError(err, fallback = 'خطای نامشخص') {
+  if (!err) return fallback;
+  if (typeof err === 'string') return err;
+  if (Array.isArray(err)) return err.map(e => parseApiError(e, '')).filter(Boolean).join(' | ') || fallback;
+  if (typeof err === 'object') {
+    if (typeof err.detail === 'string' && err.detail.trim()) return err.detail;
+    if (err.errors) return parseApiError(err.errors, fallback);
+    return Object.values(err).map(v => parseApiError(v, '')).filter(Boolean).join(' | ') || fallback;
+  }
+  return fallback;
+}
+
 async function loadLeaveTypes() {
   const sel = document.getElementById('leaveType');
   const res = await CRM.apiFetch('/leave/types/?page_size=100');
   if (!res || !res.ok) return sel.innerHTML = '<option>خطا</option>';
   const data = await res.json();
   const items = data.results || data;
+  if (!items.length) {
+    sel.innerHTML = '<option value="">نوع مرخصی موجود نیست</option>';
+    return;
+  }
   sel.innerHTML = items.map(i => `<option value="${i.id}">${i.name}</option>`).join('');
 }
 
 async function createLeaveRequest() {
+  const leaveType = Number(document.getElementById('leaveType').value);
+  if (!leaveType) {
+    CRM.showToast('ابتدا نوع مرخصی را انتخاب کنید.', 'warning');
+    return;
+  }
   const payload = {
-    leave_type: Number(document.getElementById('leaveType').value),
+    leave_type: leaveType,
     start_date: CRM.toISO(document.getElementById('leaveStart').value) || document.getElementById('leaveStart').value,
     end_date: CRM.toISO(document.getElementById('leaveEnd').value) || document.getElementById('leaveEnd').value,
     reason: document.getElementById('leaveReason').value,
   };
   const res = await CRM.apiFetch('/leave/requests/', { method: 'POST', body: JSON.stringify(payload) });
-  if (!res || !res.ok) return CRM.showToast('ثبت درخواست ناموفق بود.', 'danger');
+  if (!res || !res.ok) {
+    let err = null;
+    try { err = await res.json(); } catch (e) {}
+    return CRM.showToast(parseApiError(err, 'ثبت درخواست ناموفق بود.'), 'danger');
+  }
   CRM.showToast('درخواست مرخصی ثبت شد.', 'success');
   loadLeaveRequests();
 }
@@ -75,14 +100,22 @@ async function leaveAction(id, actionType) {
     ? { action: 'reject', rejection_reason: 'رد توسط مدیر' }
     : { action: 'approve' };
   const res = await CRM.apiFetch(`/leave/requests/${id}/action/`, { method: 'POST', body: JSON.stringify(payload) });
-  if (!res || !res.ok) return CRM.showToast('اقدام ناموفق بود.', 'danger');
+  if (!res || !res.ok) {
+    let err = null;
+    try { err = await res.json(); } catch (e) {}
+    return CRM.showToast(parseApiError(err, 'اقدام ناموفق بود.'), 'danger');
+  }
   CRM.showToast('اقدام ثبت شد.', 'success');
   loadLeaveRequests();
 }
 
 async function cancelLeave(id) {
   const res = await CRM.apiFetch(`/leave/requests/${id}/cancel/`, { method: 'POST' });
-  if (!res || !res.ok) return CRM.showToast('لغو ناموفق بود.', 'danger');
+  if (!res || !res.ok) {
+    let err = null;
+    try { err = await res.json(); } catch (e) {}
+    return CRM.showToast(parseApiError(err, 'لغو ناموفق بود.'), 'danger');
+  }
   CRM.showToast('درخواست لغو شد.', 'success');
   loadLeaveRequests();
 }

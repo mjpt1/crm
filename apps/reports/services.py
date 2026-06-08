@@ -18,10 +18,12 @@ from django.db.models import (
     Subquery,
     Sum,
 )
+from django.db.utils import OperationalError, ProgrammingError
 from django.db.models.functions import ExtractWeekDay, TruncMonth, TruncWeek
 from django.utils import timezone
 
 from apps.leads.models import Lead, LeadStatus
+from apps.payments.models import OnlinePayment, PaymentStatus
 from apps.sales.models import Invoice, InvoiceStatus
 from apps.users.models import CustomUser
 
@@ -229,15 +231,37 @@ class DashboardService:
         invoice_stats = invoices_qs.aggregate(
             total=Count('id'),
             pending_approval=Count('id', filter=Q(status=InvoiceStatus.PENDING_APPROVAL)),
-            paid_this_month=Count(
-                'id',
-                filter=Q(status=InvoiceStatus.PAID, created_at__date__gte=month_start),
-            ),
+            paid_this_month=Count('id', filter=Q(status=InvoiceStatus.PAID, created_at__date__gte=month_start)),
         )
+
+        # Payment widgets must reflect actual verified online transactions, not invoice creation dates.
+        try:
+            if user.can_manage_all:
+                payments_qs = OnlinePayment.objects.all()
+            elif user.is_supervisor and user.team_id:
+                payments_qs = OnlinePayment.objects.filter(invoice__created_by__team_id=user.team_id)
+            else:
+                payments_qs = OnlinePayment.objects.filter(invoice__created_by_id__in=accessible_ids)
+
+            payment_stats = payments_qs.filter(
+                status__in=(PaymentStatus.VERIFIED, PaymentStatus.SUCCESS),
+                verified_at__date__gte=month_start,
+            ).aggregate(
+                count=Count('id'),
+                amount=Sum('amount'),
+            )
+        except (OperationalError, ProgrammingError):
+            payment_stats = {'count': 0, 'amount': 0}
+
+        invoice_stats['paid_this_month'] = payment_stats.get('count') or 0
 
         return {
             'leads': lead_stats,
             'invoices': invoice_stats,
+            'payments': {
+                'verified_this_month': payment_stats.get('count') or 0,
+                'amount_this_month': float(payment_stats.get('amount') or 0),
+            },
             'generated_at': timezone.now().isoformat(),
         }
 
@@ -267,12 +291,31 @@ class DashboardService:
             invoice_base_qs.filter(created_at__date__gte=start_date)
             .annotate(month=TruncMonth('created_at'))
             .values('month')
-            .annotate(
-                total=Count('id'),
-                paid=Count('id', filter=Q(status=InvoiceStatus.PAID)),
-            )
+            .annotate(total=Count('id'))
             .order_by('month')
         )
+
+        try:
+            if user.can_manage_all:
+                payments_base_qs = OnlinePayment.objects.all()
+            elif user.is_supervisor and user.team_id:
+                payments_base_qs = OnlinePayment.objects.filter(invoice__created_by__team_id=user.team_id)
+            else:
+                payments_base_qs = OnlinePayment.objects.filter(invoice__created_by_id__in=accessible_ids)
+
+            payment_monthly = (
+                payments_base_qs
+                .filter(
+                    verified_at__date__gte=start_date,
+                    status__in=(PaymentStatus.VERIFIED, PaymentStatus.SUCCESS),
+                )
+                .annotate(month=TruncMonth('verified_at'))
+                .values('month')
+                .annotate(count=Count('id'))
+                .order_by('month')
+            )
+        except (OperationalError, ProgrammingError):
+            payment_monthly = []
 
         lead_monthly = (
             lead_base_qs.filter(created_at__date__gte=start_date)
@@ -283,8 +326,9 @@ class DashboardService:
         )
 
         invoice_map = {r['month'].strftime('%Y-%m'): r for r in invoice_monthly}
+        payment_map = {r['month'].strftime('%Y-%m'): r for r in payment_monthly}
         lead_map = {r['month'].strftime('%Y-%m'): r for r in lead_monthly}
-        all_month_keys = sorted(set(invoice_map.keys()) | set(lead_map.keys()))
+        all_month_keys = sorted(set(invoice_map.keys()) | set(lead_map.keys()) | set(payment_map.keys()))
 
         labels = []
         invoice_total = []
@@ -294,7 +338,7 @@ class DashboardService:
             year, month = month_key.split('-')
             labels.append(f'{year}/{month}')
             invoice_total.append(invoice_map.get(month_key, {}).get('total', 0))
-            invoice_paid.append(invoice_map.get(month_key, {}).get('paid', 0))
+            invoice_paid.append(payment_map.get(month_key, {}).get('count', 0))
             lead_total.append(lead_map.get(month_key, {}).get('total', 0))
 
         return {

@@ -18,8 +18,22 @@ from apps.users.permissions import IsSupervisorOrAbove
 
 
 class LeaveTypeViewSet(viewsets.ModelViewSet):
-    queryset = LeaveType.objects.filter(is_active=True)
     serializer_class = LeaveTypeSerializer
+
+    def get_queryset(self):
+        qs = LeaveType.objects.filter(is_active=True)
+        if not qs.exists():
+            LeaveType.objects.get_or_create(
+                name='مرخصی استحقاقی',
+                defaults={
+                    'max_days_per_year': 20,
+                    'is_paid': True,
+                    'description': 'نوع پیش فرض برای شروع ثبت درخواست های مرخصی.',
+                    'is_active': True,
+                },
+            )
+            qs = LeaveType.objects.filter(is_active=True)
+        return qs
 
     def get_permissions(self):
         if self.action in ('create', 'update', 'partial_update', 'destroy'):
