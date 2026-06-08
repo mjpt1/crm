@@ -60,19 +60,31 @@
 {% block extra_js %}
 <script>
 async function loadInvoicesForPayment() {
-  const res = await CRM.apiFetch('/sales/invoices/?status=approved&page_size=100');
+  const res = await CRM.apiFetch('/sales/invoices/?page_size=100');
   const select = document.getElementById('invoiceSelect');
   if (!res || !res.ok) {
     select.innerHTML = '<option value="">خطا در بارگذاری فاکتورها</option>';
     return;
   }
   const data = await res.json();
-  const items = data.results || data;
+  const allItems = data.results || data;
+  const items = allItems.filter(i => !['paid', 'cancelled', 'refunded'].includes(i.status));
   if (!items.length) {
     select.innerHTML = '<option value="">فاکتور قابل پرداختی موجود نیست</option>';
     return;
   }
-  select.innerHTML = items.map(i => `<option value="${i.id}">${i.number || i.invoice_number} - ${i.customer_name || 'مشتری'}</option>`).join('');
+  const labels = {
+    draft: 'پیش‌نویس',
+    pending_approval: 'در انتظار تایید',
+    approved: 'تایید شده',
+    partially_paid: 'پرداخت جزئی',
+    overdue: 'معوق',
+  };
+  select.innerHTML = items.map(i => {
+    const num = i.number || i.invoice_number;
+    const st = labels[i.status] || i.status;
+    return `<option value="${i.id}">${num} - ${i.customer_name || 'مشتری'} (${st})</option>`;
+  }).join('');
 }
 
 async function initiatePayment() {

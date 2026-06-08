@@ -113,7 +113,7 @@
           </div>
           <div class="col-md-6">
             <label class="form-label">سررسید (اختیاری)</label>
-            <input type="date" class="form-control" id="invDueDate" />
+            <input type="text" class="form-control" id="invDueDate" dir="ltr" placeholder="۱۴۰۵/۰۳/۱۸" />
           </div>
           <div class="col-md-8">
             <label class="form-label">شرح آیتم <span class="text-danger">*</span></label>
@@ -260,7 +260,11 @@ async function createInvoice() {
     customer_name: document.getElementById('invCustomerName').value.trim(),
     customer_phone: document.getElementById('invCustomerPhone').value.trim(),
     customer_email: document.getElementById('invCustomerEmail').value.trim(),
-    due_date: document.getElementById('invDueDate').value || null,
+    due_date: (function() {
+      const raw = document.getElementById('invDueDate').value.trim();
+      if (!raw) return null;
+      return CRM.toISO(raw) || raw;
+    })(),
     discount: Number(document.getElementById('invDiscount').value || 0),
     tax_rate: Number(document.getElementById('invTaxRate').value || 0),
     notes: document.getElementById('invNotes').value.trim(),

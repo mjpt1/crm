@@ -228,9 +228,9 @@ function renderLeads(data) {
       <td>${lead.assigned_to_name || '<span class="text-muted">تخصیص‌نیافته</span>'}</td>
       <td>${CRM.formatDate(lead.created_at)}</td>
       <td>
-        <a href="/leads/${lead.id}/" class="btn btn-sm btn-outline-primary py-0 px-2">
+        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" onclick="openLeadDetail(${lead.id})">
           <i class="bi bi-eye"></i>
-        </a>
+        </button>
       </td>
     </tr>
   `).join('');
@@ -322,9 +322,46 @@ function renderPagination(total, next, previous) {
 
 function goToPage(page) { currentPage = page; loadLeads(); }
 
+async function openLeadDetail(id) {
+  const res = await CRM.apiFetch(`/leads/${id}/`);
+  if (!res || !res.ok) {
+    CRM.showToast('جزئیات سرنخ یافت نشد.', 'danger');
+    return;
+  }
+  const lead = await res.json();
+  document.getElementById('leadDetailBody').innerHTML = `
+    <div class="row g-2 small">
+      <div class="col-md-6"><strong>نام:</strong> ${lead.first_name || ''} ${lead.last_name || ''}</div>
+      <div class="col-md-6"><strong>شماره تماس:</strong> ${lead.phone || '—'}</div>
+      <div class="col-md-6"><strong>ایمیل:</strong> ${lead.email || '—'}</div>
+      <div class="col-md-6"><strong>شرکت:</strong> ${lead.company || '—'}</div>
+      <div class="col-md-6"><strong>منبع:</strong> ${SOURCE_LABELS[lead.source] || lead.source || '—'}</div>
+      <div class="col-md-6"><strong>وضعیت:</strong> ${STATUS_LABELS[lead.status] || lead.status || '—'}</div>
+      <div class="col-12"><strong>آدرس:</strong> ${lead.address || '—'}</div>
+      <div class="col-md-6"><strong>ایجاد:</strong> ${CRM.formatDate(lead.created_at)}</div>
+      <div class="col-md-6"><strong>بروزرسانی:</strong> ${CRM.formatDate(lead.updated_at)}</div>
+    </div>`;
+  new bootstrap.Modal(document.getElementById('leadDetailModal')).show();
+}
+
 document.addEventListener('DOMContentLoaded', loadLeads);
 document.getElementById('searchInput').addEventListener('keyup', (e) => {
   if (e.key === 'Enter') loadLeads();
 });
 </script>
+
+<div class="modal fade" id="leadDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">جزئیات سرنخ</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="leadDetailBody"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
