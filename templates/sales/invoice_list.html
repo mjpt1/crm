@@ -339,7 +339,21 @@ function goToPage(page) { currentPage = page; loadInvoices(); }
 
 function openNewInvoiceModal() {
   document.getElementById('addInvoiceError').classList.add('d-none');
-  new bootstrap.Modal(document.getElementById('addInvoiceModal')).show();
+  const modalEl = document.getElementById('addInvoiceModal');
+  bootstrap.Modal.getOrCreateInstance(modalEl).show();
+}
+
+function closeModalSafely(modalId) {
+  const modalEl = document.getElementById(modalId);
+  if (!modalEl) return;
+  bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+
+  // Defensive cleanup for rare cases where Bootstrap backdrop remains attached.
+  setTimeout(() => {
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('padding-right');
+  }, 350);
 }
 
 async function createInvoice() {
@@ -379,7 +393,7 @@ async function createInvoice() {
   });
 
   if (res && res.ok) {
-    bootstrap.Modal.getInstance(document.getElementById('addInvoiceModal')).hide();
+    closeModalSafely('addInvoiceModal');
     CRM.showToast('فاکتور با موفقیت ایجاد شد.', 'success');
     currentPage = 1;
     loadInvoices();
