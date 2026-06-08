@@ -243,6 +243,7 @@ let currentPage = 1;
 const PAGE_SIZE = 20;
 let currentInvoiceId = null;
 let currentInvoiceStatus = '';
+let invoiceDetailEls = null;
 
 const STATUS_LABELS = {
   draft: 'پیش‌نویس',
@@ -422,6 +423,41 @@ function toggleDetailEditable(editable) {
   });
 }
 
+function ensureDetailEls() {
+  if (invoiceDetailEls) return invoiceDetailEls;
+  invoiceDetailEls = {
+    submitBtn: document.querySelector('#invoiceDetailModal .btn-outline-secondary'),
+    approveBtn: document.querySelector('#invoiceDetailModal .btn-outline-success'),
+    rejectBtn: document.querySelector('#invoiceDetailModal .btn-outline-danger'),
+    saveBtn: document.querySelector('#invoiceDetailModal .btn-primary'),
+  };
+  return invoiceDetailEls;
+}
+
+function refreshDetailActionButtons(status) {
+  const els = ensureDetailEls();
+  const canEdit = ['draft', 'pending_approval'].includes(status);
+  const canSubmit = status === 'draft';
+  const canApprove = ['draft', 'pending_approval'].includes(status);
+  const canReject = status === 'pending_approval';
+
+  if (els.submitBtn) {
+    els.submitBtn.disabled = !canSubmit;
+    els.submitBtn.classList.toggle('d-none', !canSubmit);
+  }
+  if (els.approveBtn) {
+    els.approveBtn.disabled = !canApprove;
+    els.approveBtn.classList.toggle('d-none', !canApprove);
+  }
+  if (els.rejectBtn) {
+    els.rejectBtn.disabled = !canReject;
+    els.rejectBtn.classList.toggle('d-none', !canReject);
+  }
+  if (els.saveBtn) {
+    els.saveBtn.disabled = !canEdit;
+  }
+}
+
 async function openInvoiceDetail(invoiceId) {
   resetDetailError();
   currentInvoiceId = invoiceId;
@@ -462,6 +498,7 @@ async function openInvoiceDetail(invoiceId) {
 
   const canEdit = ['draft', 'pending_approval'].includes(currentInvoiceStatus);
   toggleDetailEditable(canEdit);
+  refreshDetailActionButtons(currentInvoiceStatus);
 
   new bootstrap.Modal(document.getElementById('invoiceDetailModal')).show();
 }
@@ -528,6 +565,28 @@ async function submitInvoiceFromDetail() {
 
 async function approveInvoiceFromDetail() {
   if (!currentInvoiceId) return;
+
+  // Convenience flow: if still draft, submit first then approve.
+  if (currentInvoiceStatus === 'draft') {
+    const submitRes = await CRM.apiFetch(`/sales/invoices/${currentInvoiceId}/submit/`, {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
+    if (!submitRes || !submitRes.ok) {
+      let msg = 'ارسال برای تایید قبل از تایید نهایی ناموفق بود.';
+      try {
+        const data = await submitRes.json();
+        msg = data.detail || Object.values(data).flat().join(' | ') || msg;
+      } catch (e) {}
+      return showDetailError(msg);
+    }
+    currentInvoiceStatus = 'pending_approval';
+  }
+
+  if (currentInvoiceStatus !== 'pending_approval') {
+    return showDetailError('فقط فاکتور در انتظار تایید قابل تایید است.');
+  }
+
   const res = await CRM.apiFetch(`/sales/invoices/${currentInvoiceId}/approve/`, {
     method: 'POST',
     body: JSON.stringify({}),
