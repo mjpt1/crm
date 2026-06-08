@@ -29,30 +29,34 @@ class TeamIsolationMiddleware:
         global _sqlite_bootstrapped
         if _sqlite_bootstrapped:
             return
+        try:
+            db = settings.DATABASES.get('default', {})
+            if db.get('ENGINE') != 'django.db.backends.sqlite3':
+                _sqlite_bootstrapped = True
+                return
 
-        db = settings.DATABASES.get('default', {})
-        if db.get('ENGINE') != 'django.db.backends.sqlite3':
+            db_name = str(db.get('NAME', ''))
+            if '/tmp/' not in db_name.replace('\\', '/'):
+                _sqlite_bootstrapped = True
+                return
+
+            target = Path(db_name)
+            if target.exists():
+                _sqlite_bootstrapped = True
+                return
+
+            seed_db = Path(settings.BASE_DIR) / 'db.sqlite3'
+            if not seed_db.exists():
+                _sqlite_bootstrapped = True
+                return
+
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(seed_db, target)
+            _sqlite_bootstrapped = True
+        except Exception:
+            logger.exception('SQLite bootstrap failed')
             _sqlite_bootstrapped = True
             return
-
-        db_name = str(db.get('NAME', ''))
-        if '/tmp/' not in db_name.replace('\\', '/'):
-            _sqlite_bootstrapped = True
-            return
-
-        target = Path(db_name)
-        if target.exists():
-            _sqlite_bootstrapped = True
-            return
-
-        seed_db = Path(settings.BASE_DIR) / 'db.sqlite3'
-        if not seed_db.exists():
-            _sqlite_bootstrapped = True
-            return
-
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(seed_db, target)
-        _sqlite_bootstrapped = True
 
     @staticmethod
     def _ensure_demo_admin_exists():
@@ -81,8 +85,11 @@ class TeamIsolationMiddleware:
             return
 
     def __call__(self, request):
-        self._bootstrap_sqlite_if_needed()
-        self._ensure_demo_admin_exists()
+        try:
+            self._bootstrap_sqlite_if_needed()
+            self._ensure_demo_admin_exists()
+        except Exception:
+            logger.exception('Middleware initialization failed')
         try:
             if hasattr(request, 'user') and request.user.is_authenticated:
                 request.accessible_user_ids = list(
