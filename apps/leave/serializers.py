@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from apps.leave.models import LeaveRequest, LeaveStatus, LeaveType
+from apps.users.models import CustomUser
 
 
 class LeaveTypeSerializer(serializers.ModelSerializer):
@@ -30,17 +31,37 @@ class LeaveRequestSerializer(serializers.ModelSerializer):
 
 
 class LeaveRequestCreateSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.filter(is_active=True),
+        required=False,
+        allow_null=True,
+    )
+
     class Meta:
         model = LeaveRequest
-        fields = ['leave_type', 'start_date', 'end_date', 'reason']
+        fields = ['user', 'leave_type', 'start_date', 'end_date', 'reason']
 
     def validate(self, attrs):
         if attrs['end_date'] < attrs['start_date']:
             raise serializers.ValidationError({'end_date': 'End date must be after start date.'})
+
+        request_user = self.context['request'].user
+        target_user = attrs.get('user') or request_user
+
+        if request_user.can_manage_all:
+            pass
+        elif request_user.is_supervisor:
+            if target_user.id != request_user.id:
+                if not request_user.team_id or target_user.team_id != request_user.team_id:
+                    raise serializers.ValidationError({'user': 'You can only create leave requests for your team members.'})
+        elif target_user.id != request_user.id:
+            raise serializers.ValidationError({'user': 'You can only create leave requests for yourself.'})
+
+        attrs['user'] = target_user
+
         # Check for overlapping leave requests
-        user = self.context['request'].user
         overlap = LeaveRequest.objects.filter(
-            user=user,
+            user=target_user,
             status__in=(LeaveStatus.PENDING, LeaveStatus.APPROVED),
             start_date__lte=attrs['end_date'],
             end_date__gte=attrs['start_date'],

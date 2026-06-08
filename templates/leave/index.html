@@ -7,6 +7,10 @@
 <li class="breadcrumb-item active">مرخصی</li>
 {% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+{% endblock %}
+
 {% block content %}
 <div class="d-flex align-items-center justify-content-between mb-3">
   <h4 class="fw-bold mb-0">مدیریت مرخصی</h4>
@@ -16,11 +20,22 @@
   <div class="card-header bg-white"><strong>ثبت درخواست مرخصی</strong></div>
   <div class="card-body">
     <div class="row g-2 align-items-end">
-      <div class="col-md-3"><select id="leaveType" class="form-select form-select-sm"></select></div>
-      <div class="col-md-2"><input id="leaveStart" type="text" class="form-control form-control-sm" dir="ltr" placeholder="۱۴۰۳/۰۱/۰۱" /></div>
-      <div class="col-md-2"><input id="leaveEnd" type="text" class="form-control form-control-sm" dir="ltr" placeholder="۱۴۰۳/۰۱/۳۰" /></div>
-      <div class="col-md-3"><input id="leaveReason" class="form-control form-control-sm" placeholder="دلیل" /></div>
-      <div class="col-md-2"><button class="btn btn-primary btn-sm w-100" onclick="createLeaveRequest()">ثبت</button></div>
+      <div class="col-md-3"><select id="leaveUser" class="form-select form-select-sm"></select></div>
+      <div class="col-md-2"><select id="leaveType" class="form-select form-select-sm"></select></div>
+      <div class="col-md-2">
+        <div class="input-group input-group-sm" dir="ltr">
+          <input id="leaveStart" type="text" class="form-control" placeholder="۱۴۰۳/۰۱/۰۱" />
+          <button class="btn btn-outline-secondary" type="button" onclick="openLeaveDatePicker('leaveStart')"><i class="bi bi-calendar3"></i></button>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="input-group input-group-sm" dir="ltr">
+          <input id="leaveEnd" type="text" class="form-control" placeholder="۱۴۰۳/۰۱/۳۰" />
+          <button class="btn btn-outline-secondary" type="button" onclick="openLeaveDatePicker('leaveEnd')"><i class="bi bi-calendar3"></i></button>
+        </div>
+      </div>
+      <div class="col-md-2"><input id="leaveReason" class="form-control form-control-sm" placeholder="دلیل" /></div>
+      <div class="col-md-1"><button class="btn btn-primary btn-sm w-100" onclick="createLeaveRequest()">ثبت</button></div>
     </div>
   </div>
 </div>
@@ -66,6 +81,9 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
 <script>
 function parseApiError(err, fallback = 'خطای نامشخص') {
   if (!err) return fallback;
@@ -90,6 +108,112 @@ async function loadLeaveTypes() {
     return;
   }
   sel.innerHTML = items.map(i => `<option value="${i.id}">${i.name}</option>`).join('');
+}
+
+function fullName(u) {
+  const name = `${u.first_name || ''} ${u.last_name || ''}`.trim();
+  return name || u.email || `کاربر ${u.id}`;
+}
+
+async function loadLeaveUsers() {
+  const sel = document.getElementById('leaveUser');
+  const meRes = await CRM.apiFetch('/users/users/me/');
+  if (!meRes || !meRes.ok) {
+    sel.innerHTML = '<option value="">خطا در بارگذاری کاربر</option>';
+    return;
+  }
+  const me = await meRes.json();
+
+  const listRes = await CRM.apiFetch('/users/users/?page_size=200');
+  if (!listRes || !listRes.ok) {
+    sel.innerHTML = `<option value="${me.id}">${fullName(me)} (خودم)</option>`;
+    return;
+  }
+  const listData = await listRes.json();
+  const users = listData.results || listData || [];
+  const ids = new Set();
+  const rows = [];
+
+  if (users.length) {
+    users.forEach((u) => {
+      if (!ids.has(u.id)) {
+        ids.add(u.id);
+        rows.push(u);
+      }
+    });
+  }
+  if (!ids.has(me.id)) rows.unshift(me);
+
+  sel.innerHTML = rows.map(u => {
+    const label = u.id === me.id ? `${fullName(u)} (خودم)` : fullName(u);
+    return `<option value="${u.id}">${label}</option>`;
+  }).join('');
+  sel.value = String(me.id);
+}
+
+function initLeaveDatePickers() {
+  const ids = ['leaveStart', 'leaveEnd'];
+  const hasJalaliPicker = Boolean(window.jQuery && jQuery.fn && jQuery.fn.persianDatepicker);
+  ids.forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (hasJalaliPicker) {
+      jQuery(`#${id}`).persianDatepicker({
+        format: 'YYYY/MM/DD',
+        autoClose: true,
+        initialValue: false,
+        observer: true,
+      });
+      el.dataset.calendarMode = 'jalali';
+    } else {
+      el.type = 'date';
+      el.placeholder = '';
+      el.dataset.calendarMode = 'gregorian';
+    }
+  });
+}
+
+function openLeaveDatePicker(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (el.dataset.calendarMode === 'jalali' && window.jQuery && jQuery.fn && jQuery.fn.persianDatepicker) {
+    try {
+      jQuery(`#${id}`).persianDatepicker('show');
+      return;
+    } catch (e) {}
+  }
+  if (typeof el.showPicker === 'function') {
+    el.showPicker();
+    return;
+  }
+  el.focus();
+}
+
+function getLeaveInputISO(id) {
+  const el = document.getElementById(id);
+  const raw = (el?.value || '').trim();
+  if (!raw) return '';
+  if (el.dataset.calendarMode === 'gregorian') return raw;
+  return CRM.toISO(raw);
+}
+
+function setLeaveDefaultDates() {
+  const now = new Date();
+  const startEl = document.getElementById('leaveStart');
+  const endEl = document.getElementById('leaveEnd');
+  if (startEl.dataset.calendarMode === 'gregorian' || endEl.dataset.calendarMode === 'gregorian') {
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    const today = `${y}-${m}-${d}`;
+    if (!startEl.value) startEl.value = today;
+    if (!endEl.value) endEl.value = today;
+    return;
+  }
+  const j = (window.jalaali ? window.jalaali : jalaali).toJalaali(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  const today = `${j.jy}/${String(j.jm).padStart(2, '0')}/${String(j.jd).padStart(2, '0')}`;
+  if (!startEl.value) startEl.value = today;
+  if (!endEl.value) endEl.value = today;
 }
 
 async function createLeaveType() {
@@ -118,14 +242,28 @@ async function createLeaveType() {
 
 async function createLeaveRequest() {
   const leaveType = Number(document.getElementById('leaveType').value);
+  const leaveUser = Number(document.getElementById('leaveUser').value);
   if (!leaveType) {
     CRM.showToast('ابتدا نوع مرخصی را انتخاب کنید.', 'warning');
     return;
   }
+  if (!leaveUser) {
+    CRM.showToast('ابتدا کاربر را انتخاب کنید.', 'warning');
+    return;
+  }
+
+  const startISO = getLeaveInputISO('leaveStart');
+  const endISO = getLeaveInputISO('leaveEnd');
+  if (!startISO || !endISO) {
+    CRM.showToast('تاریخ شروع و پایان را با فرمت معتبر وارد کنید.', 'warning');
+    return;
+  }
+
   const payload = {
+    user: leaveUser,
     leave_type: leaveType,
-    start_date: CRM.toISO(document.getElementById('leaveStart').value) || document.getElementById('leaveStart').value,
-    end_date: CRM.toISO(document.getElementById('leaveEnd').value) || document.getElementById('leaveEnd').value,
+    start_date: startISO,
+    end_date: endISO,
     reason: document.getElementById('leaveReason').value,
   };
   const res = await CRM.apiFetch('/leave/requests/', { method: 'POST', body: JSON.stringify(payload) });
@@ -195,6 +333,9 @@ async function loadLeaveRequests() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  initLeaveDatePickers();
+  setLeaveDefaultDates();
+  loadLeaveUsers();
   loadLeaveTypes();
   loadLeaveRequests();
 });

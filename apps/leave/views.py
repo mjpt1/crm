@@ -62,7 +62,7 @@ class LeaveRequestViewSet(viewsets.ModelViewSet):
         return [permissions.IsAuthenticated()]
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        serializer.save(user=serializer.validated_data.get('user', self.request.user))
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
