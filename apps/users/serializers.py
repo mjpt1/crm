@@ -50,26 +50,22 @@ class TeamDetailSerializer(serializers.ModelSerializer):
 
 
 class TeamWriteSerializer(serializers.ModelSerializer):
-    supervisor = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUser.objects.filter(
-            role__in=('supervisor', 'super_admin', 'sales_manager'),
-            is_active=True,
-        ),
-        required=False,
-        allow_null=True,
-    )
+    supervisor = serializers.IntegerField(required=False, allow_null=True)
 
     class Meta:
         model = Team
         fields = ['name', 'supervisor', 'description', 'is_active']
 
     def validate_supervisor(self, value):
-        from apps.users.models import Role
-        if value and value.role not in (Role.SUPERVISOR, Role.SUPER_ADMIN, Role.SALES_MANAGER):
-            raise serializers.ValidationError(
-                'Supervisor must have the Supervisor role or above.'
-            )
-        return value
+        if value in (None, ''):
+            return None
+        supervisor = CustomUser.objects.filter(
+            id=value,
+            is_active=True,
+            role__in=('supervisor', 'super_admin', 'sales_manager'),
+        ).first()
+        # Gracefully ignore stale/invalid supervisor IDs from cached UIs.
+        return supervisor
 
 
 # ─── User Serializers ─────────────────────────────────────────────────────────
