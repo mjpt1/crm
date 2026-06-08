@@ -96,6 +96,9 @@
 
 {% block extra_js %}
 <script>
+const SUPERVISOR_ROLES = new Set(['supervisor', 'super_admin', 'sales_manager']);
+let availableSupervisorIds = new Set();
+
 function parseApiError(err, fallback = 'خطای نامشخص') {
   if (!err) return fallback;
   if (typeof err === 'string') return err;
@@ -154,13 +157,21 @@ async function loadTeams() {
 }
 
 async function loadSupervisors() {
-  const res = await CRM.apiFetch('/auth/users/?role=supervisor&page_size=100');
+  const res = await CRM.apiFetch('/auth/users/?page_size=300');
   if (!res) return;
   const data = await res.json();
   const users = data.results || data;
-  const opts = users.map(u => `<option value="${u.id}">${u.first_name} ${u.last_name}</option>`).join('');
-  document.getElementById('addTeamSupervisor').insertAdjacentHTML('beforeend', opts);
-  document.getElementById('editTeamSupervisor').insertAdjacentHTML('beforeend', opts);
+  const supervisors = (users || []).filter(u => u && u.is_active !== false && SUPERVISOR_ROLES.has(u.role));
+  availableSupervisorIds = new Set(supervisors.map(u => String(u.id)));
+  const opts = supervisors.map(u => `<option value="${u.id}">${u.first_name} ${u.last_name}</option>`).join('');
+  document.getElementById('addTeamSupervisor').innerHTML = '<option value="">انتخاب سرپرست…</option>' + opts;
+  document.getElementById('editTeamSupervisor').innerHTML = '<option value="">بدون سرپرست</option>' + opts;
+}
+
+function selectedSupervisorOrNull(selectId) {
+  const raw = (document.getElementById(selectId).value || '').trim();
+  if (!raw) return null;
+  return availableSupervisorIds.has(raw) ? Number(raw) : null;
 }
 
 async function openEditTeam(id) {
@@ -188,7 +199,7 @@ document.getElementById('btnSaveTeam').addEventListener('click', async () => {
   const payload = {
     name,
     description: document.getElementById('addTeamDesc').value.trim() || undefined,
-    supervisor: document.getElementById('addTeamSupervisor').value || null,
+    supervisor: selectedSupervisorOrNull('addTeamSupervisor'),
     is_active: true,
   };
   const res = await CRM.apiFetch('/auth/teams/', { method: 'POST', body: JSON.stringify(payload) });
@@ -211,7 +222,7 @@ document.getElementById('btnUpdateTeam').addEventListener('click', async () => {
   const payload = {
     name: document.getElementById('editTeamName').value.trim(),
     description: document.getElementById('editTeamDesc').value.trim() || undefined,
-    supervisor: document.getElementById('editTeamSupervisor').value || null,
+    supervisor: selectedSupervisorOrNull('editTeamSupervisor'),
     is_active: document.getElementById('editTeamActive').value === 'true',
   };
   const res = await CRM.apiFetch(`/auth/teams/${id}/`, { method: 'PATCH', body: JSON.stringify(payload) });

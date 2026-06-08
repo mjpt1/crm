@@ -50,6 +50,15 @@ class TeamDetailSerializer(serializers.ModelSerializer):
 
 
 class TeamWriteSerializer(serializers.ModelSerializer):
+    supervisor = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.filter(
+            role__in=('supervisor', 'super_admin', 'sales_manager'),
+            is_active=True,
+        ),
+        required=False,
+        allow_null=True,
+    )
+
     class Meta:
         model = Team
         fields = ['name', 'supervisor', 'description', 'is_active']
