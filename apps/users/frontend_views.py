@@ -1,8 +1,37 @@
 """Template-based frontend views."""
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
+from django.db.utils import OperationalError, ProgrammingError
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
+
+from apps.users.models import Role
+
+
+def _ensure_demo_admin_for_serverless():
+    if not getattr(settings, 'AUTO_CREATE_DEMO_ADMIN', False):
+        return
+    email = getattr(settings, 'DEMO_ADMIN_EMAIL', '').strip().lower()
+    password = getattr(settings, 'DEMO_ADMIN_PASSWORD', '')
+    if not email or not password:
+        return
+    User = get_user_model()
+    try:
+        if not User.objects.filter(email=email).exists():
+            User.objects.create_user(
+                email=email,
+                password=password,
+                first_name='System',
+                last_name='Admin',
+                role=Role.SUPER_ADMIN,
+                is_staff=True,
+                is_superuser=True,
+                is_active=True,
+            )
+    except (OperationalError, ProgrammingError):
+        return
 
 
 def dashboard_redirect(request):
@@ -13,6 +42,7 @@ def dashboard_redirect(request):
 
 @require_http_methods(['GET', 'POST'])
 def login_page(request):
+    _ensure_demo_admin_for_serverless()
     if request.user.is_authenticated:
         return redirect('dashboard')
 
