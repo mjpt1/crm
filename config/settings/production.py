@@ -1,5 +1,7 @@
 """Production settings with hardened security."""
 import os
+import shutil
+import sqlite3
 from pathlib import Path
 
 from .base import *  # noqa
@@ -57,16 +59,32 @@ if IS_VERCEL:
 	# This avoids accidental Postgres selection from legacy DB_HOST variables.
 	has_external_db_config = bool(os.getenv('DATABASE_URL'))
 	if not has_external_db_config:
+		target_db = Path('/tmp/db.sqlite3')
+		seed_db = BASE_DIR / 'db.sqlite3'
+
+		def _has_users_table(db_path: Path) -> bool:
+			if not db_path.exists():
+				return False
+			try:
+				conn = sqlite3.connect(str(db_path))
+				cur = conn.cursor()
+				cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
+				exists = cur.fetchone() is not None
+				conn.close()
+				return exists
+			except Exception:
+				return False
+
+		if seed_db.exists() and not _has_users_table(target_db):
+			target_db.parent.mkdir(parents=True, exist_ok=True)
+			shutil.copyfile(seed_db, target_db)
+
 		DATABASES = {
 			'default': {
 				'ENGINE': 'django.db.backends.sqlite3',
-				'NAME': BASE_DIR / 'db.sqlite3',
+				'NAME': target_db,
 			}
 		}
-
-		# Avoid DB writes from audit logs when running with bundled SQLite.
-		if 'auditlog.middleware.AuditlogMiddleware' in MIDDLEWARE:
-			MIDDLEWARE.remove('auditlog.middleware.AuditlogMiddleware')
 
 	# On Vercel, collectstatic may not generate a manifest in every workflow.
 	STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
