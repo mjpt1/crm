@@ -23,7 +23,7 @@ class LeaveTypeViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = LeaveType.objects.filter(is_active=True)
         if not qs.exists():
-            LeaveType.objects.get_or_create(
+            LeaveType.objects.update_or_create(
                 name='مرخصی استحقاقی',
                 defaults={
                     'max_days_per_year': 20,
