@@ -224,6 +224,8 @@
       <div class="modal-footer d-flex justify-content-between">
         <div>
           <button type="button" class="btn btn-outline-secondary" onclick="submitInvoiceFromDetail()">ارسال برای تایید</button>
+          <button type="button" class="btn btn-outline-success" onclick="approveInvoiceFromDetail()">تایید فاکتور</button>
+          <button type="button" class="btn btn-outline-danger" onclick="rejectInvoiceFromDetail()">رد فاکتور</button>
         </div>
         <div>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
@@ -517,6 +519,46 @@ async function submitInvoiceFromDetail() {
     return;
   }
   let msg = 'ارسال برای تایید ناموفق بود.';
+  try {
+    const data = await res.json();
+    msg = data.detail || Object.values(data).flat().join(' | ') || msg;
+  } catch (e) {}
+  showDetailError(msg);
+}
+
+async function approveInvoiceFromDetail() {
+  if (!currentInvoiceId) return;
+  const res = await CRM.apiFetch(`/sales/invoices/${currentInvoiceId}/approve/`, {
+    method: 'POST',
+    body: JSON.stringify({}),
+  });
+  if (res && res.ok) {
+    CRM.showToast('فاکتور تایید شد.', 'success');
+    await openInvoiceDetail(currentInvoiceId);
+    loadInvoices();
+    return;
+  }
+  let msg = 'تایید فاکتور ناموفق بود.';
+  try {
+    const data = await res.json();
+    msg = data.detail || Object.values(data).flat().join(' | ') || msg;
+  } catch (e) {}
+  showDetailError(msg);
+}
+
+async function rejectInvoiceFromDetail() {
+  if (!currentInvoiceId) return;
+  const res = await CRM.apiFetch(`/sales/invoices/${currentInvoiceId}/reject/`, {
+    method: 'POST',
+    body: JSON.stringify({}),
+  });
+  if (res && res.ok) {
+    CRM.showToast('فاکتور رد شد و به پیش‌نویس برگشت.', 'success');
+    await openInvoiceDetail(currentInvoiceId);
+    loadInvoices();
+    return;
+  }
+  let msg = 'رد فاکتور ناموفق بود.';
   try {
     const data = await res.json();
     msg = data.detail || Object.values(data).flat().join(' | ') || msg;
