@@ -131,17 +131,24 @@ let refreshTimer = null;
 
 function pad2(n) { return String(n).padStart(2, '0'); }
 
+function getJalaaliLib() {
+  if (window.jalaali) return window.jalaali;
+  if (typeof jalaali !== 'undefined') return jalaali;
+  return null;
+}
+
 function getDefaultJalaliRange() {
-  if (!window.jalaali) {
+  const jLib = getJalaaliLib();
+  if (!jLib) {
     return getDefaultGregorianRange();
   }
   const now = new Date();
-  const j = window.jalaali.toJalaali(
+  const j = jLib.toJalaali(
     now.getFullYear(),
     now.getMonth() + 1,
     now.getDate()
   );
-  const len = window.jalaali.jalaaliMonthLength(j.jy, j.jm);
+  const len = jLib.jalaaliMonthLength(j.jy, j.jm);
   return {
     start: `${j.jy}/${pad2(j.jm)}/01`,
     end: `${j.jy}/${pad2(j.jm)}/${pad2(len)}`,
@@ -164,7 +171,7 @@ function initJalaliPickers() {
     'supervisorsStart', 'supervisorsEnd',
     'managersStart', 'managersEnd',
   ];
-  const hasJalaliPicker = Boolean(window.jQuery && jQuery.fn && jQuery.fn.persianDatepicker && window.jalaali);
+  const hasJalaliPicker = Boolean(window.jQuery && jQuery.fn && jQuery.fn.persianDatepicker && getJalaaliLib());
   ids.forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -278,7 +285,7 @@ function getDateRangeByPrefix(prefix) {
   const endEl = document.getElementById(`${prefix}End`);
   const startRaw = (startEl.value || '').trim();
   const endRaw = (endEl.value || '').trim();
-  const isGregorian = startEl.dataset.calendarMode === 'gregorian' || !window.jalaali;
+  const isGregorian = startEl.dataset.calendarMode === 'gregorian' || !getJalaaliLib();
   const dateFrom = isGregorian ? startRaw : CRM.toISO(startRaw);
   const dateTo = isGregorian ? endRaw : CRM.toISO(endRaw);
   return { startRaw, endRaw, dateFrom, dateTo };
