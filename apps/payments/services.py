@@ -82,7 +82,6 @@ class ZibalService:
             raise ZibalException('Could not connect to payment gateway.')
 
     @classmethod
-    @transaction.atomic
     def initiate_payment(cls, invoice, initiated_by):
         """
         Step 1: Request a trackId from Zibal, create an OnlinePayment record,
@@ -115,14 +114,15 @@ class ZibalService:
         track_id = str(track_id_raw)
         payment_url = settings.ZIBAL_PAYMENT_URL.format(track_id=track_id)
 
-        payment = OnlinePayment.objects.create(
-            invoice=invoice,
-            amount=invoice.total_amount,
-            track_id=track_id,
-            payment_url=payment_url,
-            status=PaymentStatus.PENDING,
-            initiated_by=initiated_by,
-        )
+        with transaction.atomic():
+            payment = OnlinePayment.objects.create(
+                invoice=invoice,
+                amount=invoice.total_amount,
+                track_id=track_id,
+                payment_url=payment_url,
+                status=PaymentStatus.PENDING,
+                initiated_by=initiated_by,
+            )
 
         logger.info(
             'Zibal payment initiated: trackId=%s invoice=%s',
