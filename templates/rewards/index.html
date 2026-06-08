@@ -60,8 +60,18 @@
         </div>
         <div class="mb-2"><input id="tValue" type="number" class="form-control form-control-sm" placeholder="مقدار هدف" /></div>
         <div class="row g-2 mb-2">
-          <div class="col"><input id="tStart" type="text" class="form-control form-control-sm" dir="ltr" placeholder="از: ۱۴۰۵/۰۳/۰۱" /></div>
-          <div class="col"><input id="tEnd" type="text" class="form-control form-control-sm" dir="ltr" placeholder="تا: ۱۴۰۵/۰۳/۳۱" /></div>
+          <div class="col">
+            <div class="input-group input-group-sm" dir="ltr">
+              <input id="tStart" type="text" class="form-control" placeholder="از: ۱۴۰۵/۰۳/۰۱" />
+              <button class="btn btn-outline-secondary" type="button" onclick="openTargetDatePicker('tStart')"><i class="bi bi-calendar3"></i></button>
+            </div>
+          </div>
+          <div class="col">
+            <div class="input-group input-group-sm" dir="ltr">
+              <input id="tEnd" type="text" class="form-control" placeholder="تا: ۱۴۰۵/۰۳/۳۱" />
+              <button class="btn btn-outline-secondary" type="button" onclick="openTargetDatePicker('tEnd')"><i class="bi bi-calendar3"></i></button>
+            </div>
+          </div>
         </div>
         <button class="btn btn-primary btn-sm w-100" onclick="createTarget()">ثبت هدف</button>
       </div>
@@ -131,18 +141,58 @@ function parseApiError(err, fallback = 'خطای نامشخص') {
 
 function setTargetDateDefaults() {
   const now = new Date();
-  const j = (window.jalaali ? window.jalaali : jalaali).toJalaali(now.getFullYear(), now.getMonth() + 1, now.getDate());
-  const len = (window.jalaali ? window.jalaali : jalaali).jalaaliMonthLength(j.jy, j.jm);
-  const firstDay = `${j.jy}/${String(j.jm).padStart(2, '0')}/01`;
-  const lastDay = `${j.jy}/${String(j.jm).padStart(2, '0')}/${String(len).padStart(2, '0')}`;
+  let firstDay;
+  let lastDay;
+  const startEl = document.getElementById('tStart');
+  const endEl = document.getElementById('tEnd');
+  if (startEl?.dataset.calendarMode === 'gregorian' || !window.jalaali) {
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const first = `${yyyy}-${mm}-01`;
+    const lastDate = new Date(yyyy, now.getMonth() + 1, 0).getDate();
+    const last = `${yyyy}-${mm}-${String(lastDate).padStart(2, '0')}`;
+    firstDay = first;
+    lastDay = last;
+  } else {
+    const j = window.jalaali.toJalaali(now.getFullYear(), now.getMonth() + 1, now.getDate());
+    const len = window.jalaali.jalaaliMonthLength(j.jy, j.jm);
+    firstDay = `${j.jy}/${String(j.jm).padStart(2, '0')}/01`;
+    lastDay = `${j.jy}/${String(j.jm).padStart(2, '0')}/${String(len).padStart(2, '0')}`;
+  }
   if (!document.getElementById('tStart').value) document.getElementById('tStart').value = firstDay;
   if (!document.getElementById('tEnd').value) document.getElementById('tEnd').value = lastDay;
 }
 
 function initTargetDatePickers() {
-  if (!window.jQuery || !jQuery().persianDatepicker) return;
-  jQuery('#tStart').persianDatepicker({ format: 'YYYY/MM/DD', autoClose: true, initialValue: false });
-  jQuery('#tEnd').persianDatepicker({ format: 'YYYY/MM/DD', autoClose: true, initialValue: false });
+  const hasJalaliPicker = Boolean(window.jQuery && jQuery.fn && jQuery.fn.persianDatepicker && window.jalaali);
+  ['tStart', 'tEnd'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (hasJalaliPicker) {
+      jQuery(`#${id}`).persianDatepicker({ format: 'YYYY/MM/DD', autoClose: true, initialValue: false });
+      el.dataset.calendarMode = 'jalali';
+    } else {
+      el.type = 'date';
+      el.placeholder = '';
+      el.dataset.calendarMode = 'gregorian';
+    }
+  });
+}
+
+function openTargetDatePicker(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (el.dataset.calendarMode === 'jalali' && window.jQuery && jQuery.fn && jQuery.fn.persianDatepicker) {
+    try {
+      jQuery(`#${id}`).persianDatepicker('show');
+      return;
+    } catch (e) {}
+  }
+  if (typeof el.showPicker === 'function') {
+    el.showPicker();
+    return;
+  }
+  el.focus();
 }
 
 function onTargetAssignTypeChange() {
@@ -192,8 +242,12 @@ async function loadTargets() {
 }
 
 async function createTarget() {
-  const startISO = CRM.toISO(document.getElementById('tStart').value) || '';
-  let endISO = CRM.toISO(document.getElementById('tEnd').value) || '';
+  const startEl = document.getElementById('tStart');
+  const endEl = document.getElementById('tEnd');
+  const startRaw = (startEl.value || '').trim();
+  const endRaw = (endEl.value || '').trim();
+  const startISO = startEl.dataset.calendarMode === 'gregorian' ? startRaw : (CRM.toISO(startRaw) || '');
+  let endISO = endEl.dataset.calendarMode === 'gregorian' ? endRaw : (CRM.toISO(endRaw) || '');
   if (!startISO || !endISO) {
     CRM.showToast('لطفاً بازه تاریخ هدف را کامل وارد کنید.', 'warning');
     return;
@@ -258,7 +312,10 @@ async function loadRewards() {
 }
 
 async function loadUsersForReward() {
-  const res = await CRM.apiFetch('/auth/users/?page_size=200');
+  let res = await CRM.apiFetch('/users/users/?page_size=200');
+  if (!res || !res.ok) {
+    res = await CRM.apiFetch('/auth/users/?page_size=200');
+  }
   if (!res || !res.ok) return;
   const data = await res.json();
   const users = data.results || data;
@@ -278,7 +335,10 @@ async function loadUsersForReward() {
 }
 
 async function loadTeamsForTarget() {
-  const res = await CRM.apiFetch('/auth/teams/?page_size=200');
+  let res = await CRM.apiFetch('/users/teams/?page_size=200');
+  if (!res || !res.ok) {
+    res = await CRM.apiFetch('/auth/teams/?page_size=200');
+  }
   if (!res || !res.ok) return;
   const data = await res.json();
   const teams = data.results || data;
