@@ -68,9 +68,9 @@ async function loadInvoicesForPayment() {
   }
   const data = await res.json();
   const allItems = data.results || data;
-  const items = allItems.filter(i => !['paid', 'cancelled', 'refunded'].includes(i.status));
+  const items = allItems.filter(i => ['approved', 'partially_paid'].includes(i.status));
   if (!items.length) {
-    select.innerHTML = '<option value="">فاکتور قابل پرداختی موجود نیست</option>';
+    select.innerHTML = '<option value="">فاکتور تاییدشده قابل پرداختی موجود نیست</option>';
     return;
   }
   const labels = {
@@ -94,7 +94,8 @@ async function initiatePayment() {
     method: 'POST',
     body: JSON.stringify({ invoice_id: Number(invoiceId) })
   });
-  const data = await res.json();
+  let data = {};
+  try { data = await res.json(); } catch (e) {}
   if (!res.ok) return CRM.showToast(data.detail || 'خطا در ایجاد لینک پرداخت.', 'danger');
   CRM.showToast('لینک پرداخت ایجاد شد.', 'success');
   if (data.payment_url) window.open(data.payment_url, '_blank');

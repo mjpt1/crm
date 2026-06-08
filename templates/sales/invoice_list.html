@@ -148,12 +148,99 @@
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="invoiceDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">بازبینی و ویرایش فاکتور</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="invoiceDetailError" class="alert alert-danger d-none"></div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">شماره فاکتور</label>
+            <input type="text" class="form-control" id="detailNumber" readonly />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">وضعیت</label>
+            <input type="text" class="form-control" id="detailStatus" readonly />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">مبلغ کل</label>
+            <input type="text" class="form-control" id="detailTotal" readonly />
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">نام مشتری</label>
+            <input type="text" class="form-control" id="detailCustomerName" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">شماره مشتری</label>
+            <input type="text" class="form-control" id="detailCustomerPhone" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">ایمیل مشتری</label>
+            <input type="email" class="form-control" id="detailCustomerEmail" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">سررسید</label>
+            <input type="text" class="form-control" id="detailDueDate" dir="ltr" placeholder="۱۴۰۵/۰۳/۱۸" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">تخفیف</label>
+            <input type="number" class="form-control" id="detailDiscount" min="0" step="0.01" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">مالیات (%)</label>
+            <input type="number" class="form-control" id="detailTaxRate" min="0" step="0.01" />
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">یادداشت</label>
+            <input type="text" class="form-control" id="detailNotes" />
+          </div>
+
+          <div class="col-12">
+            <div class="border rounded p-2">
+              <div class="fw-semibold mb-2">آیتم‌ها</div>
+              <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                  <thead>
+                    <tr>
+                      <th>شرح</th>
+                      <th class="text-end">تعداد</th>
+                      <th class="text-end">قیمت واحد</th>
+                      <th class="text-end">جمع</th>
+                    </tr>
+                  </thead>
+                  <tbody id="detailItemsTbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between">
+        <div>
+          <button type="button" class="btn btn-outline-secondary" onclick="submitInvoiceFromDetail()">ارسال برای تایید</button>
+        </div>
+        <div>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
+          <button type="button" class="btn btn-primary" onclick="saveInvoiceDetail()">ذخیره تغییرات</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 let currentPage = 1;
 const PAGE_SIZE = 20;
+let currentInvoiceId = null;
+let currentInvoiceStatus = '';
 
 const STATUS_LABELS = {
   draft: 'پیش‌نویس',
@@ -205,7 +292,7 @@ function renderInvoices(data) {
   }
   tbody.innerHTML = items.map(inv => `
     <tr>
-      <td><a href="/invoices/${inv.id}/" class="fw-semibold text-decoration-none">${inv.number}</a></td>
+      <td><button class="btn btn-link p-0 fw-semibold text-decoration-none" onclick="openInvoiceDetail(${inv.id})">${inv.number}</button></td>
       <td>${inv.customer_name || '—'}</td>
       <td>${CRM.formatDate(inv.created_at)}</td>
       <td>${CRM.formatDate(inv.due_date)}</td>
@@ -215,9 +302,9 @@ function renderInvoices(data) {
       <td><span class="badge bg-${STATUS_BADGE[inv.status] || 'secondary'}">${STATUS_LABELS[inv.status] || inv.status}</span></td>
       <td>${inv.created_by_name || '—'}</td>
       <td>
-        <a href="/invoices/${inv.id}/" class="btn btn-sm btn-outline-primary py-0 px-2">
+        <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="openInvoiceDetail(${inv.id})">
           <i class="bi bi-eye"></i>
-        </a>
+        </button>
       </td>
     </tr>
   `).join('');
@@ -303,6 +390,138 @@ async function createInvoice() {
   } catch (e) {}
   errEl.textContent = errorText;
   errEl.classList.remove('d-none');
+}
+
+function resetDetailError() {
+  const el = document.getElementById('invoiceDetailError');
+  el.classList.add('d-none');
+  el.textContent = '';
+}
+
+function showDetailError(msg) {
+  const el = document.getElementById('invoiceDetailError');
+  el.textContent = msg || 'خطا در عملیات.';
+  el.classList.remove('d-none');
+}
+
+function statusLabel(status) {
+  return STATUS_LABELS[status] || status;
+}
+
+function toggleDetailEditable(editable) {
+  const ids = [
+    'detailCustomerName', 'detailCustomerPhone', 'detailCustomerEmail',
+    'detailDueDate', 'detailDiscount', 'detailTaxRate', 'detailNotes'
+  ];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    el.readOnly = !editable;
+    el.disabled = !editable;
+  });
+}
+
+async function openInvoiceDetail(invoiceId) {
+  resetDetailError();
+  currentInvoiceId = invoiceId;
+  const res = await CRM.apiFetch(`/sales/invoices/${invoiceId}/`);
+  if (!res || !res.ok) {
+    CRM.showToast('بازبینی فاکتور ناموفق بود.', 'danger');
+    return;
+  }
+  const inv = await res.json();
+  currentInvoiceStatus = inv.status || '';
+
+  document.getElementById('detailNumber').value = inv.number || '—';
+  document.getElementById('detailStatus').value = statusLabel(inv.status || '—');
+  document.getElementById('detailTotal').value = CRM.formatCurrency(Number(inv.total_amount || 0));
+
+  document.getElementById('detailCustomerName').value = inv.customer_name || '';
+  document.getElementById('detailCustomerPhone').value = inv.customer_phone || '';
+  document.getElementById('detailCustomerEmail').value = inv.customer_email || '';
+  document.getElementById('detailDueDate').value = inv.due_date ? String(inv.due_date).slice(0, 10) : '';
+  document.getElementById('detailDiscount').value = Number(inv.discount || 0);
+  document.getElementById('detailTaxRate').value = Number(inv.tax_rate || 0);
+  document.getElementById('detailNotes').value = inv.notes || '';
+
+  const items = inv.items || [];
+  const itemsTbody = document.getElementById('detailItemsTbody');
+  if (!items.length) {
+    itemsTbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">آیتمی ثبت نشده است.</td></tr>';
+  } else {
+    itemsTbody.innerHTML = items.map(it => `
+      <tr>
+        <td>${it.description || '—'}</td>
+        <td class="text-end">${it.quantity || 0}</td>
+        <td class="text-end">${CRM.formatCurrency(Number(it.unit_price || 0))}</td>
+        <td class="text-end">${CRM.formatCurrency(Number(it.total_price || 0))}</td>
+      </tr>
+    `).join('');
+  }
+
+  const canEdit = ['draft', 'pending_approval'].includes(currentInvoiceStatus);
+  toggleDetailEditable(canEdit);
+
+  new bootstrap.Modal(document.getElementById('invoiceDetailModal')).show();
+}
+
+async function saveInvoiceDetail() {
+  if (!currentInvoiceId) return;
+  if (!['draft', 'pending_approval'].includes(currentInvoiceStatus)) {
+    return showDetailError('این فاکتور در وضعیت فعلی قابل ویرایش نیست.');
+  }
+
+  const payload = {
+    customer_name: document.getElementById('detailCustomerName').value.trim(),
+    customer_phone: document.getElementById('detailCustomerPhone').value.trim(),
+    customer_email: document.getElementById('detailCustomerEmail').value.trim(),
+    due_date: (function() {
+      const raw = document.getElementById('detailDueDate').value.trim();
+      if (!raw) return null;
+      return CRM.toISO(raw) || raw;
+    })(),
+    discount: Number(document.getElementById('detailDiscount').value || 0),
+    tax_rate: Number(document.getElementById('detailTaxRate').value || 0),
+    notes: document.getElementById('detailNotes').value.trim(),
+  };
+
+  const res = await CRM.apiFetch(`/sales/invoices/${currentInvoiceId}/`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+
+  if (res && res.ok) {
+    CRM.showToast('فاکتور با موفقیت ویرایش شد.', 'success');
+    await openInvoiceDetail(currentInvoiceId);
+    loadInvoices();
+    return;
+  }
+
+  let msg = 'ویرایش فاکتور ناموفق بود.';
+  try {
+    const data = await res.json();
+    msg = Object.values(data).flat().join(' | ') || msg;
+  } catch (e) {}
+  showDetailError(msg);
+}
+
+async function submitInvoiceFromDetail() {
+  if (!currentInvoiceId) return;
+  const res = await CRM.apiFetch(`/sales/invoices/${currentInvoiceId}/submit/`, {
+    method: 'POST',
+    body: JSON.stringify({}),
+  });
+  if (res && res.ok) {
+    CRM.showToast('فاکتور برای تایید ارسال شد.', 'success');
+    await openInvoiceDetail(currentInvoiceId);
+    loadInvoices();
+    return;
+  }
+  let msg = 'ارسال برای تایید ناموفق بود.';
+  try {
+    const data = await res.json();
+    msg = data.detail || Object.values(data).flat().join(' | ') || msg;
+  } catch (e) {}
+  showDetailError(msg);
 }
 
 document.addEventListener('DOMContentLoaded', loadInvoices);
