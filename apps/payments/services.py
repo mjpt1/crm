@@ -69,7 +69,11 @@ class ZibalService:
                 headers={'Content-Type': 'application/json'},
             )
             response.raise_for_status()
-            return response.json()
+            try:
+                return response.json()
+            except ValueError:
+                logger.error('Zibal API returned non-JSON response: %s', url)
+                raise ZibalException('Invalid response from payment gateway.')
         except requests.Timeout:
             logger.error('Zibal API timeout: %s', url)
             raise ZibalException('Payment gateway timeout. Please try again.')
