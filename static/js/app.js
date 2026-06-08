@@ -153,8 +153,8 @@ const CRM = (() => {
       pending: ['در انتظار', 'warning'],
       rejected: ['رد شده', 'danger'],
       // وضعیت پرداخت آنلاین
-      initiated: ['شروع شده', 'info'],
-      verified: ['تایید شده', 'success'],
+      initiated: ['در انتظار پرداخت', 'info'],
+      verified: ['موفق', 'success'],
       success: ['موفق', 'success'],
       failed: ['ناموفق', 'danger'],
       // وضعیت تماس
