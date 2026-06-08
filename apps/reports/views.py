@@ -20,6 +20,14 @@ from apps.users.permissions import IsSupervisorOrAbove
 def _parse_date_range(request):
     """Helper to parse date_from / date_to from query params."""
     today = date.today()
+    single_date_str = request.query_params.get('date')
+    if single_date_str:
+        try:
+            single = date.fromisoformat(single_date_str)
+            return single, single
+        except ValueError:
+            pass
+
     date_from_str = request.query_params.get('date_from')
     date_to_str = request.query_params.get('date_to')
     try:
@@ -82,32 +90,22 @@ def team_performance(request, team_id):
     return Response(data)
 
 
-def _target_date(request):
-    raw = request.query_params.get('date')
-    if not raw:
-        return date.today()
-    try:
-        return date.fromisoformat(raw)
-    except ValueError:
-        return date.today()
-
-
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def live_experts_report(request):
-    target = _target_date(request)
-    return Response(LiveSalesBoardService.experts_board(target))
+    date_from, date_to = _parse_date_range(request)
+    return Response(LiveSalesBoardService.experts_board(date_from, date_to))
 
 
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def live_supervisors_report(request):
-    target = _target_date(request)
-    return Response(LiveSalesBoardService.supervisors_board(target))
+    date_from, date_to = _parse_date_range(request)
+    return Response(LiveSalesBoardService.supervisors_board(date_from, date_to))
 
 
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def live_managers_report(request):
-    target = _target_date(request)
-    return Response(LiveSalesBoardService.managers_board(target))
+    date_from, date_to = _parse_date_range(request)
+    return Response(LiveSalesBoardService.managers_board(date_from, date_to))

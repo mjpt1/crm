@@ -406,7 +406,7 @@ class LiveSalesBoardService:
     """Live competitive boards for experts, supervisors, and managers."""
 
     @staticmethod
-    def _base_rows(target_date):
+    def _base_rows(date_from, date_to):
         issued_rows = defaultdict(lambda: {
             'expert_id': None,
             'expert_name': '',
@@ -420,7 +420,11 @@ class LiveSalesBoardService:
 
         invoices = (
             Invoice.objects
-            .filter(created_at__date=target_date, created_by__role=Role.SALES_EXPERT)
+            .filter(
+                created_at__date__gte=date_from,
+                created_at__date__lte=date_to,
+                created_by__role=Role.SALES_EXPERT,
+            )
             .select_related('created_by', 'created_by__team__supervisor')
             .prefetch_related('items')
         )
@@ -441,7 +445,8 @@ class LiveSalesBoardService:
             ManualPayment.objects
             .filter(
                 is_confirmed=True,
-                payment_date=target_date,
+                payment_date__gte=date_from,
+                payment_date__lte=date_to,
                 invoice__created_by__role=Role.SALES_EXPERT,
             )
             .select_related('invoice__created_by', 'invoice__created_by__team__supervisor')
@@ -463,7 +468,8 @@ class LiveSalesBoardService:
             OnlinePayment.objects
             .filter(
                 status__in=(PaymentStatus.VERIFIED, PaymentStatus.SUCCESS),
-                verified_at__date=target_date,
+                verified_at__date__gte=date_from,
+                verified_at__date__lte=date_to,
                 invoice__created_by__role=Role.SALES_EXPERT,
             )
             .select_related('invoice__created_by', 'invoice__created_by__team__supervisor')
@@ -513,16 +519,17 @@ class LiveSalesBoardService:
         }
 
     @classmethod
-    def experts_board(cls, target_date):
-        rows = cls._base_rows(target_date)
+    def experts_board(cls, date_from, date_to):
+        rows = cls._base_rows(date_from, date_to)
         payload = cls._to_payload(rows, 'expert_name')
-        payload['date'] = str(target_date)
+        payload['date_from'] = str(date_from)
+        payload['date_to'] = str(date_to)
         payload['scope'] = 'experts'
         return payload
 
     @classmethod
-    def supervisors_board(cls, target_date):
-        rows = cls._base_rows(target_date)
+    def supervisors_board(cls, date_from, date_to):
+        rows = cls._base_rows(date_from, date_to)
         grouped = defaultdict(lambda: {
             'supervisor_id': None,
             'supervisor_name': 'بدون سوپروایزر',
@@ -547,13 +554,14 @@ class LiveSalesBoardService:
             result_rows.append(g)
 
         payload = cls._to_payload(result_rows, 'supervisor_name')
-        payload['date'] = str(target_date)
+        payload['date_from'] = str(date_from)
+        payload['date_to'] = str(date_to)
         payload['scope'] = 'supervisors'
         return payload
 
     @classmethod
-    def managers_board(cls, target_date):
-        rows = cls._base_rows(target_date)
+    def managers_board(cls, date_from, date_to):
+        rows = cls._base_rows(date_from, date_to)
         manager_by_team_id = {
             m.team_id: m
             for m in CustomUser.objects.filter(role=Role.SALES_MANAGER, is_active=True).select_related('team')
@@ -592,6 +600,7 @@ class LiveSalesBoardService:
             result_rows.append(g)
 
         payload = cls._to_payload(result_rows, 'manager_name')
-        payload['date'] = str(target_date)
+        payload['date_from'] = str(date_from)
+        payload['date_to'] = str(date_to)
         payload['scope'] = 'managers'
         return payload

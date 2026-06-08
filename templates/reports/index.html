@@ -26,14 +26,18 @@
   <div class="card-body">
     <div class="row g-2 align-items-end">
       <div class="col-md-3">
-        <label class="form-label mb-1">تاریخ گزارش</label>
-        <input id="liveDate" class="form-control form-control-sm" type="date" />
+        <label class="form-label mb-1">از تاریخ (شمسی)</label>
+        <input id="liveStart" class="form-control form-control-sm" dir="ltr" placeholder="۱۴۰۵/۰۳/۰۱" />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label mb-1">تا تاریخ (شمسی)</label>
+        <input id="liveEnd" class="form-control form-control-sm" dir="ltr" placeholder="۱۴۰۵/۰۳/۳۱" />
       </div>
       <div class="col-md-2">
         <button class="btn btn-primary btn-sm w-100" onclick="loadAllLiveBoards()">بروزرسانی</button>
       </div>
-      <div class="col-md-7 text-muted small">
-        هر صدور فاکتور و هر وصولی (پرداخت دستی یا آنلاین) به صورت زنده در رقابت اضافه می‌شود.
+      <div class="col-md-4 text-muted small">
+        گزارش بر اساس بازه انتخابی شما محاسبه می‌شود.
       </div>
     </div>
   </div>
@@ -68,6 +72,22 @@ let expertsChart = null;
 let supervisorsChart = null;
 let managersChart = null;
 let refreshTimer = null;
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+function getDefaultJalaliRange() {
+  const now = new Date();
+  const j = (window.jalaali ? window.jalaali : jalaali).toJalaali(
+    now.getFullYear(),
+    now.getMonth() + 1,
+    now.getDate()
+  );
+  const len = (window.jalaali ? window.jalaali : jalaali).jalaaliMonthLength(j.jy, j.jm);
+  return {
+    start: `${j.jy}/${pad2(j.jm)}/01`,
+    end: `${j.jy}/${pad2(j.jm)}/${pad2(len)}`,
+  };
+}
 
 function toAmount(v) {
   return CRM.formatCurrency(Number(v || 0));
@@ -143,8 +163,15 @@ function buildChart(canvasId, chartRefName, labels, issuedData, collectedData) {
 }
 
 async function loadBoard(endpoint, topId, totalId, chartCanvasId, chartRefName) {
-  const dt = document.getElementById('liveDate').value;
-  const qs = dt ? `?date=${dt}` : '';
+  const startRaw = document.getElementById('liveStart').value.trim();
+  const endRaw = document.getElementById('liveEnd').value.trim();
+  const dateFrom = CRM.toISO(startRaw);
+  const dateTo = CRM.toISO(endRaw);
+  if (!dateFrom || !dateTo) {
+    CRM.showToast('بازه تاریخ را به فرمت شمسی صحیح وارد کنید (مثل ۱۴۰۵/۰۳/۰۱).', 'warning');
+    return;
+  }
+  const qs = `?date_from=${encodeURIComponent(dateFrom)}&date_to=${encodeURIComponent(dateTo)}`;
   const res = await CRM.apiFetch(`${endpoint}${qs}`);
   if (!res || !res.ok) {
     CRM.showToast('خطا در بارگذاری گزارش زنده', 'danger');
@@ -176,7 +203,9 @@ async function loadAllLiveBoards() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('liveDate').value = new Date().toISOString().slice(0, 10);
+  const defaults = getDefaultJalaliRange();
+  document.getElementById('liveStart').value = defaults.start;
+  document.getElementById('liveEnd').value = defaults.end;
   loadAllLiveBoards();
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = setInterval(loadAllLiveBoards, 15000);
