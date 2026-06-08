@@ -287,7 +287,21 @@ class DashboardService:
         - Monthly lead acquisition
         """
         accessible_ids = list(user.get_accessible_user_ids())
-        start_date = timezone.now().date() - timedelta(days=months * 30)
+
+        # Always build a fixed month axis so charts remain visible even with zero data.
+        today = timezone.now().date()
+        current_month_start = today.replace(day=1)
+        month_keys = []
+        for offset in range(months - 1, -1, -1):
+            year = current_month_start.year
+            month = current_month_start.month - offset
+            while month <= 0:
+                month += 12
+                year -= 1
+            month_keys.append(f'{year}-{month:02d}')
+
+        first_year, first_month = month_keys[0].split('-')
+        start_date = today.replace(year=int(first_year), month=int(first_month), day=1)
 
         if user.can_manage_all:
             invoice_base_qs = Invoice.objects.all()
@@ -360,7 +374,7 @@ class DashboardService:
             key = r['month'].strftime('%Y-%m')
             payment_map[key] = (payment_map.get(key) or 0) + (r.get('count') or 0)
         lead_map = {r['month'].strftime('%Y-%m'): r for r in lead_monthly}
-        all_month_keys = sorted(set(invoice_map.keys()) | set(lead_map.keys()) | set(payment_map.keys()))
+        all_month_keys = month_keys
 
         labels = []
         invoice_total = []
