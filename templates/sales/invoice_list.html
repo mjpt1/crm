@@ -88,6 +88,66 @@
     <ul class="pagination pagination-sm mb-0" id="pagination-nav"></ul>
   </nav>
 </div>
+
+<div class="modal fade" id="addInvoiceModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">ایجاد فاکتور جدید</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="addInvoiceError" class="alert alert-danger d-none"></div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">نام مشتری <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="invCustomerName" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">شماره مشتری <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="invCustomerPhone" placeholder="09..." />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">ایمیل مشتری</label>
+            <input type="email" class="form-control" id="invCustomerEmail" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">سررسید (اختیاری)</label>
+            <input type="date" class="form-control" id="invDueDate" />
+          </div>
+          <div class="col-md-8">
+            <label class="form-label">شرح آیتم <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="invItemDesc" />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">تعداد</label>
+            <input type="number" class="form-control" id="invItemQty" min="0.01" step="0.01" value="1" />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">قیمت واحد</label>
+            <input type="number" class="form-control" id="invItemPrice" min="0" step="0.01" value="0" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">تخفیف</label>
+            <input type="number" class="form-control" id="invDiscount" min="0" step="0.01" value="0" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">مالیات (%)</label>
+            <input type="number" class="form-control" id="invTaxRate" min="0" step="0.01" value="0" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">یادداشت</label>
+            <input type="text" class="form-control" id="invNotes" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+        <button type="button" class="btn btn-primary" onclick="createInvoice()">ثبت فاکتور</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -145,13 +205,13 @@ function renderInvoices(data) {
   }
   tbody.innerHTML = items.map(inv => `
     <tr>
-      <td><a href="/invoices/${inv.id}/" class="fw-semibold text-decoration-none">${inv.invoice_number}</a></td>
+      <td><a href="/invoices/${inv.id}/" class="fw-semibold text-decoration-none">${inv.number}</a></td>
       <td>${inv.customer_name || '—'}</td>
-      <td>${CRM.formatDate(inv.issue_date)}</td>
+      <td>${CRM.formatDate(inv.created_at)}</td>
       <td>${CRM.formatDate(inv.due_date)}</td>
-      <td class="text-end">${CRM.formatCurrency(inv.total_amount)}</td>
-      <td class="text-end text-success">${CRM.formatCurrency(inv.paid_amount)}</td>
-      <td class="text-end text-danger">${CRM.formatCurrency(inv.remaining_amount)}</td>
+      <td class="text-end">${CRM.formatCurrency(Number(inv.total_amount || 0))}</td>
+      <td class="text-end text-success">${CRM.formatCurrency(Number(inv.paid_amount || 0))}</td>
+      <td class="text-end text-danger">${CRM.formatCurrency(Number(inv.remaining_amount ?? (Number(inv.total_amount || 0) - Number(inv.paid_amount || 0))))}</td>
       <td><span class="badge bg-${STATUS_BADGE[inv.status] || 'secondary'}">${STATUS_LABELS[inv.status] || inv.status}</span></td>
       <td>${inv.created_by_name || '—'}</td>
       <td>
@@ -187,7 +247,59 @@ function renderPagination(total, next, previous) {
 
 function goToPage(page) { currentPage = page; loadInvoices(); }
 
-function openNewInvoiceModal() { CRM.showToast('ایجاد فاکتور جدید به زودی اضافه می‌شود.', 'info'); }
+function openNewInvoiceModal() {
+  document.getElementById('addInvoiceError').classList.add('d-none');
+  new bootstrap.Modal(document.getElementById('addInvoiceModal')).show();
+}
+
+async function createInvoice() {
+  const errEl = document.getElementById('addInvoiceError');
+  errEl.classList.add('d-none');
+
+  const payload = {
+    customer_name: document.getElementById('invCustomerName').value.trim(),
+    customer_phone: document.getElementById('invCustomerPhone').value.trim(),
+    customer_email: document.getElementById('invCustomerEmail').value.trim(),
+    due_date: document.getElementById('invDueDate').value || null,
+    discount: Number(document.getElementById('invDiscount').value || 0),
+    tax_rate: Number(document.getElementById('invTaxRate').value || 0),
+    notes: document.getElementById('invNotes').value.trim(),
+    items: [
+      {
+        description: document.getElementById('invItemDesc').value.trim(),
+        quantity: Number(document.getElementById('invItemQty').value || 1),
+        unit_price: Number(document.getElementById('invItemPrice').value || 0),
+      }
+    ]
+  };
+
+  if (!payload.customer_name || !payload.customer_phone || !payload.items[0].description) {
+    errEl.textContent = 'نام مشتری، شماره مشتری و شرح آیتم الزامی است.';
+    errEl.classList.remove('d-none');
+    return;
+  }
+
+  const res = await CRM.apiFetch('/sales/invoices/', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+  if (res && res.ok) {
+    bootstrap.Modal.getInstance(document.getElementById('addInvoiceModal')).hide();
+    CRM.showToast('فاکتور با موفقیت ایجاد شد.', 'success');
+    currentPage = 1;
+    loadInvoices();
+    return;
+  }
+
+  let errorText = 'خطا در ایجاد فاکتور.';
+  try {
+    const data = await res.json();
+    errorText = Object.values(data).flat().join(' | ') || errorText;
+  } catch (e) {}
+  errEl.textContent = errorText;
+  errEl.classList.remove('d-none');
+}
 
 document.addEventListener('DOMContentLoaded', loadInvoices);
 document.getElementById('searchInput').addEventListener('keyup', (e) => {

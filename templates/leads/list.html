@@ -12,6 +12,9 @@
 <div class="d-flex align-items-center justify-content-between mb-4">
   <h4 class="fw-bold mb-0">سرنخ‌ها</h4>
   <div class="d-flex gap-2">
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addLeadModal">
+      <i class="bi bi-plus-circle me-1"></i> سرنخ جدید
+    </button>
     <button class="btn btn-outline-primary btn-sm" onclick="requestLeads()">
       <i class="bi bi-arrow-down-circle me-1"></i> درخواست سرنخ جدید
     </button>
@@ -93,6 +96,70 @@
     <ul class="pagination pagination-sm mb-0" id="pagination-nav"></ul>
   </nav>
 </div>
+
+<div class="modal fade" id="addLeadModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">ایجاد سرنخ جدید</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="addLeadError" class="alert alert-danger d-none"></div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">نام <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="leadFirstName" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">نام خانوادگی <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="leadLastName" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">شماره تماس <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="leadPhone" placeholder="09..." />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">ایمیل</label>
+            <input type="email" class="form-control" id="leadEmail" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">شرکت</label>
+            <input type="text" class="form-control" id="leadCompany" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">منبع</label>
+            <select class="form-select" id="leadSource">
+              <option value="website">وب‌سایت</option>
+              <option value="referral">معرفی</option>
+              <option value="social_media">شبکه اجتماعی</option>
+              <option value="cold_call">تماس سرد</option>
+              <option value="exhibition">نمایشگاه</option>
+              <option value="email">ایمیل</option>
+              <option value="other" selected>سایر</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">اولویت</label>
+            <select class="form-select" id="leadPriority">
+              <option value="1">زیاد</option>
+              <option value="2" selected>متوسط</option>
+              <option value="3">کم</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">آدرس</label>
+            <textarea class="form-control" id="leadAddress" rows="2"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+        <button type="button" class="btn btn-primary" onclick="createLead()">ثبت سرنخ</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -145,7 +212,7 @@ function renderLeads(data) {
     <tr>
       <td>
         <div class="fw-semibold">${lead.first_name} ${lead.last_name}</div>
-        ${lead.company_name ? `<small class="text-muted">${lead.company_name}</small>` : ''}
+        ${lead.company ? `<small class="text-muted">${lead.company}</small>` : ''}
       </td>
       <td>${lead.phone || '—'}</td>
       <td>${lead.email || '—'}</td>
@@ -174,7 +241,7 @@ function renderLeads(data) {
 
 async function changeStatus(selectEl) {
   const id = selectEl.dataset.id;
-  const res = await CRM.apiFetch(`/leads/${id}/update_status/`, {
+  const res = await CRM.apiFetch(`/leads/${id}/status/`, {
     method: 'PATCH',
     body: JSON.stringify({ status: selectEl.value }),
   });
@@ -183,12 +250,55 @@ async function changeStatus(selectEl) {
 }
 
 async function requestLeads() {
-  const res = await CRM.apiFetch('/leads/request_leads/', { method: 'POST' });
+  const res = await CRM.apiFetch('/leads/request-leads/', { method: 'POST' });
   if (res && res.ok) {
     const data = await res.json();
     CRM.showToast(`${data.assigned_count ?? 0} سرنخ به شما تخصیص یافت.`, 'success');
     loadLeads();
   } else CRM.showToast('خطا در درخواست سرنخ.', 'danger');
+}
+
+async function createLead() {
+  const errEl = document.getElementById('addLeadError');
+  errEl.classList.add('d-none');
+
+  const payload = {
+    first_name: document.getElementById('leadFirstName').value.trim(),
+    last_name: document.getElementById('leadLastName').value.trim(),
+    phone: document.getElementById('leadPhone').value.trim(),
+    email: document.getElementById('leadEmail').value.trim(),
+    company: document.getElementById('leadCompany').value.trim(),
+    source: document.getElementById('leadSource').value,
+    priority: Number(document.getElementById('leadPriority').value),
+    address: document.getElementById('leadAddress').value.trim(),
+  };
+
+  if (!payload.first_name || !payload.last_name || !payload.phone) {
+    errEl.textContent = 'نام، نام خانوادگی و شماره تماس الزامی است.';
+    errEl.classList.remove('d-none');
+    return;
+  }
+
+  const res = await CRM.apiFetch('/leads/', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+  if (res && res.ok) {
+    bootstrap.Modal.getInstance(document.getElementById('addLeadModal')).hide();
+    CRM.showToast('سرنخ با موفقیت ایجاد شد.', 'success');
+    currentPage = 1;
+    loadLeads();
+    return;
+  }
+
+  let errorText = 'خطا در ایجاد سرنخ.';
+  try {
+    const data = await res.json();
+    errorText = Object.values(data).flat().join(' | ') || errorText;
+  } catch (e) {}
+  errEl.textContent = errorText;
+  errEl.classList.remove('d-none');
 }
 
 function clearFilters() {
