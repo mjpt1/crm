@@ -32,6 +32,22 @@
       <div class="card-body">
         <div class="mb-2"><input id="tTitle" class="form-control form-control-sm" placeholder="عنوان" /></div>
         <div class="mb-2">
+          <select id="tAssignType" class="form-select form-select-sm">
+            <option value="user">هدف برای کاربر</option>
+            <option value="team">هدف برای تیم</option>
+          </select>
+        </div>
+        <div class="mb-2" id="tUserWrap">
+          <select id="tUser" class="form-select form-select-sm">
+            <option value="">انتخاب کاربر…</option>
+          </select>
+        </div>
+        <div class="mb-2 d-none" id="tTeamWrap">
+          <select id="tTeam" class="form-select form-select-sm">
+            <option value="">انتخاب تیم…</option>
+          </select>
+        </div>
+        <div class="mb-2">
           <select id="tType" class="form-select form-select-sm">
             <option value="revenue">هدف درآمد</option>
             <option value="invoice_count">تعداد فاکتور</option>
@@ -40,8 +56,8 @@
         </div>
         <div class="mb-2"><input id="tValue" type="number" class="form-control form-control-sm" placeholder="مقدار هدف" /></div>
         <div class="row g-2 mb-2">
-          <div class="col"><input id="tStart" type="text" class="form-control form-control-sm" dir="ltr" placeholder="از: ۱۴۰۳/۰۱/۰۱" /></div>
-          <div class="col"><input id="tEnd" type="text" class="form-control form-control-sm" dir="ltr" placeholder="تا: ۱۴۰۳/۱۲/۲۹" /></div>
+          <div class="col"><input id="tStart" type="date" class="form-control form-control-sm" dir="ltr" /></div>
+          <div class="col"><input id="tEnd" type="date" class="form-control form-control-sm" dir="ltr" /></div>
         </div>
         <button class="btn btn-primary btn-sm w-100" onclick="createTarget()">ثبت هدف</button>
       </div>
@@ -94,6 +110,35 @@ const TARGET_TYPE_LABELS = {
   lead_conversion: 'نرخ تبدیل',
 };
 
+function parseApiError(err, fallback = 'خطای نامشخص') {
+  if (!err) return fallback;
+  if (typeof err === 'string') return err;
+  if (Array.isArray(err)) return err.map(e => parseApiError(e, '')).filter(Boolean).join(' | ') || fallback;
+  if (typeof err === 'object') {
+    if (typeof err.detail === 'string' && err.detail.trim()) return err.detail;
+    if (err.errors) return parseApiError(err.errors, fallback);
+    return Object.values(err).map(v => parseApiError(v, '')).filter(Boolean).join(' | ') || fallback;
+  }
+  return fallback;
+}
+
+function setTargetDateDefaults() {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const firstDay = `${yyyy}-${mm}-01`;
+  const lastDate = new Date(yyyy, now.getMonth() + 1, 0).getDate();
+  const lastDay = `${yyyy}-${mm}-${String(lastDate).padStart(2, '0')}`;
+  if (!document.getElementById('tStart').value) document.getElementById('tStart').value = firstDay;
+  if (!document.getElementById('tEnd').value) document.getElementById('tEnd').value = lastDay;
+}
+
+function onTargetAssignTypeChange() {
+  const mode = document.getElementById('tAssignType').value;
+  document.getElementById('tUserWrap').classList.toggle('d-none', mode !== 'user');
+  document.getElementById('tTeamWrap').classList.toggle('d-none', mode !== 'team');
+}
+
 async function loadTargets() {
   const tbody = document.getElementById('targetsTbody');
   const res = await CRM.apiFetch('/rewards/targets/?page_size=100');
@@ -135,11 +180,16 @@ async function loadTargets() {
 }
 
 async function createTarget() {
-  const startISO = CRM.toISO(document.getElementById('tStart').value);
-  const endISO   = CRM.toISO(document.getElementById('tEnd').value);
+  const startISO = document.getElementById('tStart').value || '';
+  let endISO = document.getElementById('tEnd').value || '';
   if (!startISO || !endISO) {
-    CRM.showToast('تاریخ را به فرمت صحیح وارد کنید (مثال: ۱۴۰۳/۰۱/۰۱)', 'warning');
+    CRM.showToast('لطفاً بازه تاریخ هدف را کامل وارد کنید.', 'warning');
     return;
+  }
+  if (endISO <= startISO) {
+    const d = new Date(startISO + 'T00:00:00');
+    d.setDate(d.getDate() + 1);
+    endISO = d.toISOString().slice(0, 10);
   }
   const payload = {
     title: document.getElementById('tTitle').value.trim(),
@@ -148,18 +198,27 @@ async function createTarget() {
     period_start: startISO,
     period_end: endISO,
   };
+  const assignType = document.getElementById('tAssignType').value;
+  if (assignType === 'user') {
+    const uid = Number(document.getElementById('tUser').value || 0);
+    if (!uid) { CRM.showToast('کاربر هدف را انتخاب کنید.', 'warning'); return; }
+    payload.user = uid;
+  } else {
+    const tid = Number(document.getElementById('tTeam').value || 0);
+    if (!tid) { CRM.showToast('تیم هدف را انتخاب کنید.', 'warning'); return; }
+    payload.team = tid;
+  }
   if (!payload.title) { CRM.showToast('عنوان را وارد کنید', 'warning'); return; }
   const res = await CRM.apiFetch('/rewards/targets/', { method: 'POST', body: JSON.stringify(payload) });
   if (!res || !res.ok) {
     const err = res ? await res.json() : {};
-    CRM.showToast(Object.values(err).flat().join(' | ') || 'ثبت هدف ناموفق بود.', 'danger');
+    CRM.showToast(parseApiError(err, 'ثبت هدف ناموفق بود.'), 'danger');
     return;
   }
   CRM.showToast('هدف ثبت شد.', 'success');
   document.getElementById('tTitle').value = '';
   document.getElementById('tValue').value = '';
-  document.getElementById('tStart').value = '';
-  document.getElementById('tEnd').value = '';
+  setTargetDateDefaults();
   loadTargets();
 }
 
@@ -192,10 +251,30 @@ async function loadUsersForReward() {
   const data = await res.json();
   const users = data.results || data;
   const sel = document.getElementById('rUser');
+  const tUserSel = document.getElementById('tUser');
   users.forEach(u => {
     const opt = document.createElement('option');
     opt.value = u.id;
     opt.textContent = `${u.first_name} ${u.last_name}`;
+    sel.appendChild(opt);
+
+    const opt2 = document.createElement('option');
+    opt2.value = u.id;
+    opt2.textContent = `${u.first_name} ${u.last_name}`;
+    tUserSel.appendChild(opt2);
+  });
+}
+
+async function loadTeamsForTarget() {
+  const res = await CRM.apiFetch('/auth/teams/?page_size=200');
+  if (!res || !res.ok) return;
+  const data = await res.json();
+  const teams = data.results || data;
+  const sel = document.getElementById('tTeam');
+  teams.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.id;
+    opt.textContent = t.name;
     sel.appendChild(opt);
   });
 }
@@ -214,7 +293,7 @@ async function createReward() {
   const res = await CRM.apiFetch('/rewards/rewards/', { method: 'POST', body: JSON.stringify(payload) });
   if (!res || !res.ok) {
     const err = res ? await res.json() : {};
-    CRM.showToast(Object.values(err).flat().join(' | ') || 'ثبت پاداش ناموفق بود.', 'danger');
+    CRM.showToast(parseApiError(err, 'ثبت پاداش ناموفق بود.'), 'danger');
     return;
   }
   CRM.showToast('پاداش ثبت شد.', 'success');
@@ -226,9 +305,13 @@ async function createReward() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  setTargetDateDefaults();
+  document.getElementById('tAssignType').addEventListener('change', onTargetAssignTypeChange);
+  onTargetAssignTypeChange();
   loadTargets();
   loadRewards();
   loadUsersForReward();
+  loadTeamsForTarget();
 });
 </script>
 {% endblock %}
