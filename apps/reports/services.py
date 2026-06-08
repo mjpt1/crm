@@ -2,6 +2,7 @@
 Performance reporting service — aggregation queries for dashboards and exports.
 """
 import logging
+from collections import defaultdict
 from datetime import timedelta
 
 from django.db.models import (
@@ -25,7 +26,7 @@ from django.utils import timezone
 from apps.leads.models import Lead, LeadStatus
 from apps.payments.models import OnlinePayment, PaymentStatus
 from apps.sales.models import Invoice, InvoiceStatus, ManualPayment
-from apps.users.models import CustomUser
+from apps.users.models import CustomUser, Role
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +100,8 @@ class ExpertPerformanceService:
             'time_diff_seconds': time_diff_seconds,
             'leads_assigned': leads_count,
             'leads_won': leads_won,
+
+
             'total_revenue': float(total_revenue),
             'conversion_rate': conversion_rate,
             'collection_rate': collection_rate,
@@ -397,3 +400,198 @@ class DashboardService:
                 'total': lead_total,
             },
         }
+
+
+class LiveSalesBoardService:
+    """Live competitive boards for experts, supervisors, and managers."""
+
+    @staticmethod
+    def _base_rows(target_date):
+        issued_rows = defaultdict(lambda: {
+            'expert_id': None,
+            'expert_name': '',
+            'supervisor_id': None,
+            'supervisor_name': 'بدون سوپروایزر',
+            'issued_amount': 0.0,
+            'collected_amount': 0.0,
+            'invoice_count': 0,
+            'payment_count': 0,
+        })
+
+        invoices = (
+            Invoice.objects
+            .filter(created_at__date=target_date, created_by__role=Role.SALES_EXPERT)
+            .select_related('created_by', 'created_by__team__supervisor')
+            .prefetch_related('items')
+        )
+        for inv in invoices:
+            expert = inv.created_by
+            key = expert.id
+            row = issued_rows[key]
+            row['expert_id'] = expert.id
+            row['expert_name'] = expert.get_full_name() or expert.email
+            sup = getattr(getattr(expert, 'team', None), 'supervisor', None)
+            if sup:
+                row['supervisor_id'] = sup.id
+                row['supervisor_name'] = sup.get_full_name() or sup.email
+            row['issued_amount'] += float(inv.total_amount or 0)
+            row['invoice_count'] += 1
+
+        manual_payments = (
+            ManualPayment.objects
+            .filter(
+                is_confirmed=True,
+                payment_date=target_date,
+                invoice__created_by__role=Role.SALES_EXPERT,
+            )
+            .select_related('invoice__created_by', 'invoice__created_by__team__supervisor')
+        )
+        for p in manual_payments:
+            expert = p.invoice.created_by
+            key = expert.id
+            row = issued_rows[key]
+            row['expert_id'] = expert.id
+            row['expert_name'] = expert.get_full_name() or expert.email
+            sup = getattr(getattr(expert, 'team', None), 'supervisor', None)
+            if sup:
+                row['supervisor_id'] = sup.id
+                row['supervisor_name'] = sup.get_full_name() or sup.email
+            row['collected_amount'] += float(p.amount or 0)
+            row['payment_count'] += 1
+
+        online_payments = (
+            OnlinePayment.objects
+            .filter(
+                status__in=(PaymentStatus.VERIFIED, PaymentStatus.SUCCESS),
+                verified_at__date=target_date,
+                invoice__created_by__role=Role.SALES_EXPERT,
+            )
+            .select_related('invoice__created_by', 'invoice__created_by__team__supervisor')
+        )
+        for p in online_payments:
+            expert = p.invoice.created_by
+            key = expert.id
+            row = issued_rows[key]
+            row['expert_id'] = expert.id
+            row['expert_name'] = expert.get_full_name() or expert.email
+            sup = getattr(getattr(expert, 'team', None), 'supervisor', None)
+            if sup:
+                row['supervisor_id'] = sup.id
+                row['supervisor_name'] = sup.get_full_name() or sup.email
+            row['collected_amount'] += float(p.amount or 0)
+            row['payment_count'] += 1
+
+        rows = []
+        for row in issued_rows.values():
+            row['total_amount'] = row['issued_amount'] + row['collected_amount']
+            rows.append(row)
+        return rows
+
+    @staticmethod
+    def _to_payload(rows, label_key):
+        sorted_rows = sorted(rows, key=lambda r: (r.get('total_amount') or 0), reverse=True)
+        labels = [r.get(label_key) or '—' for r in sorted_rows]
+        issued = [round(r.get('issued_amount') or 0, 2) for r in sorted_rows]
+        collected = [round(r.get('collected_amount') or 0, 2) for r in sorted_rows]
+        totals = [round(r.get('total_amount') or 0, 2) for r in sorted_rows]
+        top_three = sorted_rows[:3]
+
+        return {
+            'participants': sorted_rows,
+            'top_three': top_three,
+            'chart': {
+                'labels': labels,
+                'issued': issued,
+                'collected': collected,
+                'totals': totals,
+            },
+            'summary': {
+                'total_issued': round(sum(issued), 2),
+                'total_collected': round(sum(collected), 2),
+                'grand_total': round(sum(totals), 2),
+            },
+        }
+
+    @classmethod
+    def experts_board(cls, target_date):
+        rows = cls._base_rows(target_date)
+        payload = cls._to_payload(rows, 'expert_name')
+        payload['date'] = str(target_date)
+        payload['scope'] = 'experts'
+        return payload
+
+    @classmethod
+    def supervisors_board(cls, target_date):
+        rows = cls._base_rows(target_date)
+        grouped = defaultdict(lambda: {
+            'supervisor_id': None,
+            'supervisor_name': 'بدون سوپروایزر',
+            'issued_amount': 0.0,
+            'collected_amount': 0.0,
+            'invoice_count': 0,
+            'payment_count': 0,
+        })
+        for row in rows:
+            key = row.get('supervisor_id') or 0
+            g = grouped[key]
+            g['supervisor_id'] = row.get('supervisor_id')
+            g['supervisor_name'] = row.get('supervisor_name') or 'بدون سوپروایزر'
+            g['issued_amount'] += row.get('issued_amount') or 0
+            g['collected_amount'] += row.get('collected_amount') or 0
+            g['invoice_count'] += row.get('invoice_count') or 0
+            g['payment_count'] += row.get('payment_count') or 0
+
+        result_rows = []
+        for g in grouped.values():
+            g['total_amount'] = g['issued_amount'] + g['collected_amount']
+            result_rows.append(g)
+
+        payload = cls._to_payload(result_rows, 'supervisor_name')
+        payload['date'] = str(target_date)
+        payload['scope'] = 'supervisors'
+        return payload
+
+    @classmethod
+    def managers_board(cls, target_date):
+        rows = cls._base_rows(target_date)
+        manager_by_team_id = {
+            m.team_id: m
+            for m in CustomUser.objects.filter(role=Role.SALES_MANAGER, is_active=True).select_related('team')
+            if m.team_id
+        }
+
+        grouped = defaultdict(lambda: {
+            'manager_id': None,
+            'manager_name': 'بدون سرپرست',
+            'issued_amount': 0.0,
+            'collected_amount': 0.0,
+            'invoice_count': 0,
+            'payment_count': 0,
+        })
+
+        for row in rows:
+            supervisor_id = row.get('supervisor_id')
+            manager = None
+            if supervisor_id:
+                sup = CustomUser.objects.filter(id=supervisor_id).only('id', 'team_id').first()
+                if sup and sup.team_id:
+                    manager = manager_by_team_id.get(sup.team_id)
+
+            key = manager.id if manager else 0
+            g = grouped[key]
+            g['manager_id'] = manager.id if manager else None
+            g['manager_name'] = manager.get_full_name() if manager else 'بدون سرپرست'
+            g['issued_amount'] += row.get('issued_amount') or 0
+            g['collected_amount'] += row.get('collected_amount') or 0
+            g['invoice_count'] += row.get('invoice_count') or 0
+            g['payment_count'] += row.get('payment_count') or 0
+
+        result_rows = []
+        for g in grouped.values():
+            g['total_amount'] = g['issued_amount'] + g['collected_amount']
+            result_rows.append(g)
+
+        payload = cls._to_payload(result_rows, 'manager_name')
+        payload['date'] = str(target_date)
+        payload['scope'] = 'managers'
+        return payload

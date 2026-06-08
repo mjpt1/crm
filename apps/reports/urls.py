@@ -7,4 +7,7 @@ urlpatterns = [
     path('charts/', views.dashboard_charts, name='report-charts'),
     path('expert/<int:expert_id>/', views.expert_performance, name='report-expert'),
     path('team/<int:team_id>/', views.team_performance, name='report-team'),
+    path('live/experts/', views.live_experts_report, name='report-live-experts'),
+    path('live/supervisors/', views.live_supervisors_report, name='report-live-supervisors'),
+    path('live/managers/', views.live_managers_report, name='report-live-managers'),
 ]

@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from apps.reports.services import (
     DashboardService,
     ExpertPerformanceService,
+    LiveSalesBoardService,
     TeamPerformanceService,
 )
 from apps.users.models import CustomUser
@@ -79,3 +80,34 @@ def team_performance(request, team_id):
         return Response({'detail': 'Access denied.'}, status=403)
     data = TeamPerformanceService.get_team_summary(team_id, date_from, date_to)
     return Response(data)
+
+
+def _target_date(request):
+    raw = request.query_params.get('date')
+    if not raw:
+        return date.today()
+    try:
+        return date.fromisoformat(raw)
+    except ValueError:
+        return date.today()
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def live_experts_report(request):
+    target = _target_date(request)
+    return Response(LiveSalesBoardService.experts_board(target))
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def live_supervisors_report(request):
+    target = _target_date(request)
+    return Response(LiveSalesBoardService.supervisors_board(target))
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def live_managers_report(request):
+    target = _target_date(request)
+    return Response(LiveSalesBoardService.managers_board(target))
