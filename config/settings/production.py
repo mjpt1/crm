@@ -4,7 +4,7 @@ from pathlib import Path
 
 from .base import *  # noqa
 
-DEBUG = False
+DEBUG = bool(os.getenv('VERCEL'))
 
 # ─── Security Hardening ───────────────────────────────────────────────────────
 SECURE_HSTS_SECONDS = 31536000
