@@ -7,6 +7,10 @@
 <li class="breadcrumb-item active">اهداف و پاداش</li>
 {% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+{% endblock %}
+
 {% block content %}
 <div class="d-flex align-items-center justify-content-between mb-3">
   <h4 class="fw-bold mb-0">اهداف و پاداش</h4>
@@ -56,8 +60,8 @@
         </div>
         <div class="mb-2"><input id="tValue" type="number" class="form-control form-control-sm" placeholder="مقدار هدف" /></div>
         <div class="row g-2 mb-2">
-          <div class="col"><input id="tStart" type="date" class="form-control form-control-sm" dir="ltr" /></div>
-          <div class="col"><input id="tEnd" type="date" class="form-control form-control-sm" dir="ltr" /></div>
+          <div class="col"><input id="tStart" type="text" class="form-control form-control-sm" dir="ltr" placeholder="از: ۱۴۰۵/۰۳/۰۱" /></div>
+          <div class="col"><input id="tEnd" type="text" class="form-control form-control-sm" dir="ltr" placeholder="تا: ۱۴۰۵/۰۳/۳۱" /></div>
         </div>
         <button class="btn btn-primary btn-sm w-100" onclick="createTarget()">ثبت هدف</button>
       </div>
@@ -103,6 +107,9 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
 <script>
 const TARGET_TYPE_LABELS = {
   revenue: 'هدف درآمد',
@@ -124,13 +131,18 @@ function parseApiError(err, fallback = 'خطای نامشخص') {
 
 function setTargetDateDefaults() {
   const now = new Date();
-  const yyyy = now.getFullYear();
-  const mm = String(now.getMonth() + 1).padStart(2, '0');
-  const firstDay = `${yyyy}-${mm}-01`;
-  const lastDate = new Date(yyyy, now.getMonth() + 1, 0).getDate();
-  const lastDay = `${yyyy}-${mm}-${String(lastDate).padStart(2, '0')}`;
+  const j = (window.jalaali ? window.jalaali : jalaali).toJalaali(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  const len = (window.jalaali ? window.jalaali : jalaali).jalaaliMonthLength(j.jy, j.jm);
+  const firstDay = `${j.jy}/${String(j.jm).padStart(2, '0')}/01`;
+  const lastDay = `${j.jy}/${String(j.jm).padStart(2, '0')}/${String(len).padStart(2, '0')}`;
   if (!document.getElementById('tStart').value) document.getElementById('tStart').value = firstDay;
   if (!document.getElementById('tEnd').value) document.getElementById('tEnd').value = lastDay;
+}
+
+function initTargetDatePickers() {
+  if (!window.jQuery || !jQuery().persianDatepicker) return;
+  jQuery('#tStart').persianDatepicker({ format: 'YYYY/MM/DD', autoClose: true, initialValue: false });
+  jQuery('#tEnd').persianDatepicker({ format: 'YYYY/MM/DD', autoClose: true, initialValue: false });
 }
 
 function onTargetAssignTypeChange() {
@@ -180,8 +192,8 @@ async function loadTargets() {
 }
 
 async function createTarget() {
-  const startISO = document.getElementById('tStart').value || '';
-  let endISO = document.getElementById('tEnd').value || '';
+  const startISO = CRM.toISO(document.getElementById('tStart').value) || '';
+  let endISO = CRM.toISO(document.getElementById('tEnd').value) || '';
   if (!startISO || !endISO) {
     CRM.showToast('لطفاً بازه تاریخ هدف را کامل وارد کنید.', 'warning');
     return;
@@ -305,6 +317,7 @@ async function createReward() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  initTargetDatePickers();
   setTargetDateDefaults();
   document.getElementById('tAssignType').addEventListener('change', onTargetAssignTypeChange);
   onTargetAssignTypeChange();

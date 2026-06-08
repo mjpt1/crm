@@ -8,6 +8,10 @@
 <li class="breadcrumb-item active">گزارش‌ها</li>
 {% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+{% endblock %}
+
 {% block content %}
 <style>
   .board-wrap { border: 2px solid #1f2937; border-radius: 10px; background:#fff; }
@@ -66,6 +70,9 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
 let expertsChart = null;
@@ -87,6 +94,20 @@ function getDefaultJalaliRange() {
     start: `${j.jy}/${pad2(j.jm)}/01`,
     end: `${j.jy}/${pad2(j.jm)}/${pad2(len)}`,
   };
+}
+
+function initJalaliPickers() {
+  if (!window.jQuery || !jQuery().persianDatepicker) return;
+  jQuery('#liveStart').persianDatepicker({
+    format: 'YYYY/MM/DD',
+    autoClose: true,
+    initialValue: false,
+  });
+  jQuery('#liveEnd').persianDatepicker({
+    format: 'YYYY/MM/DD',
+    autoClose: true,
+    initialValue: false,
+  });
 }
 
 function toAmount(v) {
@@ -203,6 +224,7 @@ async function loadAllLiveBoards() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  initJalaliPickers();
   const defaults = getDefaultJalaliRange();
   document.getElementById('liveStart').value = defaults.start;
   document.getElementById('liveEnd').value = defaults.end;

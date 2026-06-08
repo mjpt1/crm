@@ -25,6 +25,25 @@
   </div>
 </div>
 
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-header bg-white"><strong>تعریف نوع مرخصی جدید</strong></div>
+  <div class="card-body">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-3"><input id="ltName" class="form-control form-control-sm" placeholder="نام نوع مرخصی" /></div>
+      <div class="col-md-2"><input id="ltMaxDays" type="number" class="form-control form-control-sm" placeholder="سقف سالانه" value="20" /></div>
+      <div class="col-md-2">
+        <select id="ltIsPaid" class="form-select form-select-sm">
+          <option value="true">با حقوق</option>
+          <option value="false">بدون حقوق</option>
+        </select>
+      </div>
+      <div class="col-md-3"><input id="ltDesc" class="form-control form-control-sm" placeholder="توضیحات" /></div>
+      <div class="col-md-2"><button class="btn btn-success btn-sm w-100" onclick="createLeaveType()">ثبت نوع</button></div>
+    </div>
+    <div id="leaveTypeHint" class="small text-muted mt-2">فقط سوپروایزر، مدیر فروش یا سوپرادمین امکان ثبت نوع مرخصی دارند.</div>
+  </div>
+</div>
+
 <div class="card border-0 shadow-sm">
   <div class="card-body p-0">
     <div class="table-responsive">
@@ -71,6 +90,30 @@ async function loadLeaveTypes() {
     return;
   }
   sel.innerHTML = items.map(i => `<option value="${i.id}">${i.name}</option>`).join('');
+}
+
+async function createLeaveType() {
+  const payload = {
+    name: document.getElementById('ltName').value.trim(),
+    max_days_per_year: Number(document.getElementById('ltMaxDays').value || 20),
+    is_paid: document.getElementById('ltIsPaid').value === 'true',
+    description: document.getElementById('ltDesc').value.trim(),
+    is_active: true,
+  };
+  if (!payload.name) {
+    CRM.showToast('نام نوع مرخصی را وارد کنید.', 'warning');
+    return;
+  }
+  const res = await CRM.apiFetch('/leave/types/', { method: 'POST', body: JSON.stringify(payload) });
+  if (!res || !res.ok) {
+    let err = null;
+    try { err = await res.json(); } catch (e) {}
+    return CRM.showToast(parseApiError(err, 'ثبت نوع مرخصی ناموفق بود.'), 'danger');
+  }
+  CRM.showToast('نوع مرخصی جدید ثبت شد.', 'success');
+  document.getElementById('ltName').value = '';
+  document.getElementById('ltDesc').value = '';
+  loadLeaveTypes();
 }
 
 async function createLeaveRequest() {
