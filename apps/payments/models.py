@@ -3,7 +3,7 @@ Online payment model — tracks Zibal gateway transactions.
 """
 from django.conf import settings
 from django.db.utils import OperationalError, ProgrammingError
-from django.db import models
+from django.db import connection, models
 from django.utils.translation import gettext_lazy as _
 
 from apps.sales.models import Invoice
@@ -101,7 +101,10 @@ class PaymentGatewayConfig(models.Model):
 
     @classmethod
     def get_zibal_config(cls):
+        table_name = cls._meta.db_table
         try:
+            if table_name not in connection.introspection.table_names():
+                return None
             return cls.objects.filter(gateway=PaymentGateway.ZIBAL).first()
         except (OperationalError, ProgrammingError):
             # Table may not exist yet on fresh deployments before migrations run.
